@@ -1,0 +1,1091 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Pedal a Dois</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<style>
+/* Layout: app de uma coluna (máx. 560px), barra de abas fixa embaixo; números grandes de ciclocomputador. */
+:root{
+  --bg:#F2F4F7; --surface:#FFFFFF; --sunk:#E8ECF2; --line:#D7DDE7;
+  --fg:#131924; --muted:#5A6476;
+  --a:#2452D1; --b:#C7386C;
+  --ok:#1D8649; --warn:#A86F12; --bad:#C0402B;
+  --ok-bg:#E3F3E9; --warn-bg:#F8EED9; --bad-bg:#F9E5E1;
+  --f-num:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1015; --surface:#161A21; --sunk:#1E232C; --line:#2A313C;
+  --fg:#EDF0F5; --muted:#99A3B4;
+  --a:#7397FF; --b:#FF79A6;
+  --ok:#4CC27D; --warn:#E2B34B; --bad:#FF7B64;
+  --ok-bg:#15301F; --warn-bg:#33280F; --bad-bg:#3A1A15;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1015; --surface:#161A21; --sunk:#1E232C; --line:#2A313C;
+  --fg:#EDF0F5; --muted:#99A3B4;
+  --a:#7397FF; --b:#FF79A6;
+  --ok:#4CC27D; --warn:#E2B34B; --bad:#FF7B64;
+  --ok-bg:#15301F; --warn-bg:#33280F; --bad-bg:#3A1A15;
+  color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0 calc(84px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:14px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.mark{width:30px;height:30px;flex:none}
+h1{font-family:var(--f-num);font-weight:700;font-size:1.65rem;letter-spacing:.01em;margin:0;line-height:1}
+.quem{display:flex;align-items:center;gap:8px;font-size:.9rem;color:var(--muted);min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:6px 12px}
+.quem b{color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--a)}
+.sync{margin:-6px 0 0;font-size:.8rem;color:var(--muted)}
+.sync.alerta{color:var(--warn)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.eyebrow{font-size:.74rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h2{font-family:var(--f-num);font-weight:600;font-size:1.4rem;margin:0;line-height:1.1;text-wrap:balance}
+.msg{margin:10px 0 0;font-size:.9rem;padding:10px 12px;border-radius:10px;background:var(--warn-bg);color:var(--fg)}
+.link{background:none;border:0;padding:4px 0;color:var(--a);font-size:.88rem;text-decoration:underline;text-underline-offset:3px}
+
+.btn{border:0;border-radius:12px;padding:10px 16px;background:var(--a);color:#fff;font-weight:700;white-space:nowrap}
+.btn.sec{background:var(--sunk);color:var(--fg)}
+.btn.perigo{background:var(--bad);color:#fff}
+.btn.fantasma{background:none;border:1px solid var(--line);color:var(--fg)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn-grande{flex:1;padding:16px;font-size:1.1rem;border-radius:14px}
+
+/* Conexão */
+.bt-row{display:flex;align-items:center;gap:12px}
+.sig{width:12px;height:12px;border-radius:50%;background:var(--line);flex:none;box-shadow:0 0 0 4px var(--sunk)}
+.sig.on{background:var(--ok);box-shadow:0 0 0 4px var(--ok-bg)}
+.sig.busy{background:var(--warn);box-shadow:0 0 0 4px var(--warn-bg)}
+.bt-txt{flex:1;min-width:0;display:flex;flex-direction:column}
+.bt-txt span{font-size:.86rem;color:var(--muted)}
+.bt-more{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px 14px}
+
+.field{display:flex;flex-direction:column;gap:6px}
+label{font-size:.82rem;font-weight:700;color:var(--muted)}
+select,input[type=text],input[type=number]{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-width:0}
+input[type=number]{font-variant-numeric:tabular-nums}
+
+/* Perfil do treino (barras) */
+.perfil-treino{display:flex;align-items:flex-end;gap:2px;height:44px;background:var(--sunk);border-radius:8px;padding:5px;overflow:hidden}
+.perfil-treino i{display:block;border-radius:3px 3px 0 0;min-width:3px;background:var(--a);opacity:.85}
+.perfil-treino i.livre{background:var(--muted);opacity:.35}
+.perfil-treino i.rpm{opacity:.55}
+.perfil-treino i.atual{outline:2px solid var(--fg);outline-offset:1px}
+
+/* Alvo atual */
+.alvo{display:flex;flex-direction:column;gap:8px}
+.alvo-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chip{font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.chip.ok{background:var(--ok-bg);color:var(--ok)}
+.chip.baixo{background:var(--warn-bg);color:var(--warn)}
+.chip.alto{background:var(--bad-bg);color:var(--bad)}
+.alvo-main{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.alvo-meta{font-family:var(--f-num);font-weight:700;font-size:2.4rem;line-height:1}
+.alvo-resta{font-family:var(--f-num);font-weight:600;font-size:2rem;font-variant-numeric:tabular-nums;color:var(--muted)}
+.barra{height:6px;background:var(--sunk);border-radius:6px;overflow:hidden}
+.barra i{display:block;height:100%;width:0;background:var(--a);transition:width .9s linear}
+.prox{margin:0;font-size:.88rem;color:var(--muted)}
+
+/* Métricas */
+.metricas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.m{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.m-pot{grid-column:1/-1}
+.ml{font-size:.74rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.mv{display:flex;align-items:baseline;gap:5px}
+.mv b{font-family:var(--f-num);font-weight:600;font-size:2.6rem;line-height:1;font-variant-numeric:tabular-nums}
+.m-pot .mv b{font-size:4.6rem}
+.mv small{font-size:.85rem;color:var(--muted)}
+.m.stale .mv b{color:var(--muted)}
+.acoes{display:flex;gap:10px}
+
+.resumo{display:flex;flex-direction:column;gap:12px}
+.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.kv div{display:flex;flex-direction:column}
+.kv span{font-size:.74rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.kv b{font-family:var(--f-num);font-weight:600;font-size:1.5rem;font-variant-numeric:tabular-nums}
+
+/* Treinos */
+.lista{display:flex;flex-direction:column;gap:10px}
+.treino{display:flex;flex-direction:column;gap:8px}
+.treino-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.treino-top div{min-width:0}
+.treino h3{margin:0;font-size:1.05rem;overflow-wrap:anywhere}
+.sub{font-size:.85rem;color:var(--muted)}
+.tag{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--sunk);color:var(--muted)}
+.linha-btn{display:flex;gap:8px;flex-wrap:wrap}
+.linha-btn .btn{padding:8px 12px;font-size:.9rem}
+.bloco{display:grid;grid-template-columns:4.6rem minmax(0,1fr) 4.8rem auto;gap:6px;align-items:end}
+.bloco .field{gap:3px}
+.bloco label{font-size:.7rem}
+.bloco-acoes{display:flex;gap:2px}
+.ico{background:var(--sunk);border:0;border-radius:8px;width:34px;height:42px;font-size:1rem;color:var(--fg)}
+.ico:disabled{opacity:.35}
+.editor{display:flex;flex-direction:column;gap:12px}
+.editor-blocos{display:flex;flex-direction:column;gap:10px}
+.total{font-family:var(--f-num);font-size:1.15rem;font-weight:600}
+
+/* Evolução */
+.seg{display:flex;background:var(--sunk);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:none;border-radius:8px;padding:7px 6px;font-size:.88rem;font-weight:700;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.filtros{display:flex;flex-direction:column;gap:8px}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile{display:flex;flex-direction:column;gap:6px}
+.tile-nome{display:flex;align-items:center;gap:7px;font-weight:700;min-width:0}
+.tile-nome span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile .kv{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px}
+.tile .kv b{font-size:1.3rem}
+.grafico svg{width:100%;height:auto;display:block}
+.grafico .eixo{fill:var(--muted);font-family:var(--f-body);font-size:10px}
+.grafico .grade{stroke:var(--line);stroke-width:1}
+.legenda{display:flex;gap:14px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:6px}
+.legenda span{display:flex;align-items:center;gap:6px}
+.pedalada{padding:0;overflow:hidden}
+.pedalada > button{width:100%;text-align:left;background:none;border:0;padding:12px 14px;display:flex;gap:10px;align-items:center}
+.pedalada .info{flex:1;min-width:0;display:flex;flex-direction:column}
+.pedalada .info b{font-size:.98rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pedalada .nums{font-family:var(--f-num);font-size:1.15rem;font-weight:600;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.pedalada .det{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px}
+.vazio{text-align:center;color:var(--muted);padding:26px 14px}
+.vazio b{display:block;color:var(--fg);margin-bottom:4px}
+
+/* Abas */
+.abas{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);
+  padding:6px max(16px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.abas div{max-width:560px;margin:0 auto;display:flex;gap:6px}
+.abas button{flex:1;border:0;background:none;border-radius:10px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.78rem;font-weight:700;color:var(--muted)}
+.abas button svg{width:24px;height:24px}
+.abas button[aria-current="page"]{color:var(--a);background:var(--sunk)}
+.metas{display:flex;flex-direction:column;gap:12px}
+.meta-grupo{display:flex;flex-direction:column;gap:7px}
+.meta-linha{display:grid;grid-template-columns:3.9rem minmax(0,1fr) auto;gap:10px;align-items:center;font-size:.86rem;color:var(--muted)}
+.meta-linha .barra,.meta-pessoa .barra{height:10px}
+.meta-linha .val{font-family:var(--f-num);font-weight:600;font-size:1.08rem;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--fg)}
+.barra i.cheia{background:var(--ok)}
+.grade-auto{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px}
+.meta-pessoa{display:flex;flex-direction:column;gap:5px;min-width:0}
+.meta-pessoa .barra i{transition:none}
+.grade-metas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.grade-metas label{font-size:.74rem}
+.copia{display:flex;gap:8px}
+.copia input{flex:1}
+.rodape{font-size:.8rem;color:var(--muted);text-align:center;margin:6px 0 0}
+@media (prefers-reduced-motion:reduce){.barra i{transition:none}}
+  :root{padding-top:env(safe-area-inset-top,0px);color-scheme:light}
+  body{margin:0}
+  [hidden]{display:none!important}
+  img{max-width:100%}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="9" cy="21" r="6.5" fill="none" stroke="var(--a)" stroke-width="2.5"/><circle cx="23" cy="21" r="6.5" fill="none" stroke="var(--b)" stroke-width="2.5"/><path d="M9 21l5-10h6l3 10M12.5 8h4" fill="none" stroke="var(--fg)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <h1>Pedal a Dois</h1>
+    </div>
+    <button class="quem" id="btn-ajustes" aria-label="Ajustes"><span class="dot" id="eu-dot"></span><b id="eu-nome">Você</b><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></button>
+  </header>
+  <p class="sync" id="sync">Carregando…</p>
+  <div class="card editor" id="ajustes" hidden>
+    <h2>Ajustes deste celular</h2>
+    <div class="field"><label>Quem usa este celular</label><div class="seg" id="aj-perfis" role="group" aria-label="Quem usa este celular"></div>
+</div>
+    <div class="field"><label for="aj-nome">Seu nome</label><input type="text" id="aj-nome" maxlength="24" autocomplete="off"></div>
+    <div class="field"><label>Minhas metas</label>
+      <div class="grade-metas">
+        <div class="field"><label for="aj-tm">Por treino: minutos</label><input type="number" inputmode="numeric" id="aj-tm" min="1" max="600" step="1"></div>
+        <div class="field"><label for="aj-tk">Por treino: kcal</label><input type="number" inputmode="numeric" id="aj-tk" min="1" max="5000" step="1"></div>
+        <div class="field"><label for="aj-sm">Por semana: minutos</label><input type="number" inputmode="numeric" id="aj-sm" min="1" max="3000" step="1"></div>
+        <div class="field"><label for="aj-sk">Por semana: kcal</label><input type="number" inputmode="numeric" id="aj-sk" min="1" max="30000" step="1"></div>
+      </div>
+      <span class="sub">As barras de tempo e energia enchem enquanto você pedala. A semana começa na segunda.</span></div>
+    <div class="field"><label for="aj-api">Endereço da planilha (Apps Script)</label>
+      <input type="text" id="aj-api" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec">
+      <span class="sub">Fica guardado só neste aparelho.</span></div>
+    <div class="field" id="aj-link-box" hidden><label for="aj-link">Link para configurar o outro celular</label>
+      <div class="copia"><input type="text" id="aj-link" readonly><button class="btn sec" id="aj-copiar">Copiar</button></div>
+      <span class="sub">Mande por mensagem e abra no Bluefy: o outro celular já entra configurado.</span></div>
+    <p class="msg" id="aj-msg" hidden></p>
+    <div class="linha-btn"><button class="btn" id="aj-salvar">Salvar e sincronizar</button><button class="btn fantasma" id="aj-fechar">Fechar</button></div>
+  </div>
+
+  <!-- PEDALAR -->
+  <section id="v-pedalar" class="wrap">
+    <div class="card">
+      <div class="bt-row">
+        <span class="sig" id="bt-sig"></span>
+        <div class="bt-txt"><strong id="bt-titulo">Bike desconectada</strong><span id="bt-sub">Ligue a bike, dê umas pedaladas e toque em Conectar.</span></div>
+        <button class="btn" id="bt-con">Conectar</button>
+      </div>
+      <div class="bt-more">
+        <button class="link" id="bt-todos">A bike não aparece na lista</button>
+        <button class="link" id="bt-demo">Testar sem a bike</button>
+      </div>
+      <p class="msg" id="bt-msg" hidden></p>
+    </div>
+
+    <div class="field" id="escolha">
+      <label for="sel-treino">Treino de hoje</label>
+      <select id="sel-treino"></select>
+      <div class="perfil-treino" id="treino-prev" aria-hidden="true"></div>
+      <span class="sub" id="treino-desc"></span>
+    </div>
+
+    <div class="card metas" id="metas-card">
+      <div class="meta-grupo">
+        <div class="alvo-top"><span class="eyebrow">Meta do treino</span><span class="chip ok" id="mt-chip" hidden>Meta batida</span></div>
+        <div class="meta-linha"><span>Tempo</span><div class="barra"><i id="mt-tt"></i></div><span class="val" id="mt-tt-v"></span></div>
+        <div class="meta-linha"><span>Energia</span><div class="barra"><i id="mt-te"></i></div><span class="val" id="mt-te-v"></span></div>
+      </div>
+      <div class="meta-grupo">
+        <div class="alvo-top"><span class="eyebrow">Meta da semana</span><span class="chip ok" id="ms-chip" hidden>Semana batida</span></div>
+        <div class="meta-linha"><span>Tempo</span><div class="barra"><i id="mt-st"></i></div><span class="val" id="mt-st-v"></span></div>
+        <div class="meta-linha"><span>Energia</span><div class="barra"><i id="mt-se"></i></div><span class="val" id="mt-se-v"></span></div>
+      </div>
+    </div>
+
+    <div class="card alvo" id="alvo" hidden>
+      <div class="alvo-top"><span class="eyebrow" id="alvo-bloco"></span><span class="chip" id="alvo-chip"></span></div>
+      <div class="alvo-main"><span class="alvo-meta" id="alvo-meta"></span><span class="alvo-resta" id="alvo-resta"></span></div>
+      <div class="barra"><i id="alvo-prog"></i></div>
+      <div class="perfil-treino" id="alvo-perfil" aria-hidden="true"></div>
+      <p class="prox" id="alvo-prox"></p>
+    </div>
+
+    <div class="metricas" id="metricas">
+      <div class="m m-pot"><span class="ml">Potência</span><span class="mv"><b id="m-pot">—</b><small>W</small></span></div>
+      <div class="m"><span class="ml">Cadência</span><span class="mv"><b id="m-cad">—</b><small>rpm</small></span></div>
+      <div class="m"><span class="ml">Velocidade</span><span class="mv"><b id="m-vel">—</b><small>km/h</small></span></div>
+      <div class="m"><span class="ml">Tempo</span><span class="mv"><b id="m-tempo">0:00</b></span></div>
+      <div class="m"><span class="ml">Distância</span><span class="mv"><b id="m-dist">0,00</b><small>km</small></span></div>
+      <div class="m"><span class="ml">Energia</span><span class="mv"><b id="m-kcal">0</b><small>kcal</small></span></div>
+      <div class="m" id="m-fc-box" hidden><span class="ml">Freq. cardíaca</span><span class="mv"><b id="m-fc">—</b><small>bpm</small></span></div>
+    </div>
+
+    <div class="acoes">
+      <button class="btn btn-grande" id="a-iniciar">Começar</button>
+      <button class="btn btn-grande sec" id="a-pausar" hidden>Pausar</button>
+      <button class="btn btn-grande perigo" id="a-finalizar" hidden>Finalizar</button>
+    </div>
+    <div class="card resumo" id="resumo" hidden></div>
+  </section>
+
+  <!-- TREINOS -->
+  <section id="v-treinos" class="wrap" hidden>
+    <div class="treino-top"><div><h2>Treinos</h2><span class="sub">Compartilhados entre vocês dois. Monte blocos com meta de cadência ou de potência.</span></div></div>
+    <button class="btn" id="t-novo">Novo treino</button>
+    <div class="lista" id="t-lista"></div>
+    <div class="card editor" id="t-editor" hidden></div>
+  </section>
+
+  <!-- EVOLUÇÃO -->
+  <section id="v-evolucao" class="wrap" hidden>
+    <h2>Evolução</h2>
+    <div class="filtros">
+      <div class="seg" id="f-quem" role="group" aria-label="De quem"></div>
+      <div class="seg" id="f-periodo" role="group" aria-label="Período">
+        <button data-p="4">4 semanas</button><button data-p="12">12 semanas</button><button data-p="52">1 ano</button>
+      </div>
+    </div>
+    <div class="card metas"><span class="eyebrow">Esta semana, contra a meta de cada um</span><div class="grade-auto" id="e-semana"></div></div>
+    <div class="tiles" id="e-tiles"></div>
+    <div class="card grafico"><span class="eyebrow">Minutos pedalados por semana</span><div id="e-semanas"></div><div class="legenda" id="e-leg1"></div></div>
+    <div class="card grafico"><span class="eyebrow">Potência média por treino (W)</span><div id="e-pot"></div><div class="legenda" id="e-leg2"></div></div>
+    <span class="eyebrow">Pedaladas</span>
+    <div class="lista" id="e-lista"></div>
+  </section>
+  <p class="rodape">Energia estimada a partir da potência (1 kJ de trabalho ≈ 1 kcal gasta).</p>
+</div>
+
+<nav class="abas" aria-label="Seções"><div>
+  <button data-v="pedalar" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="16" r="4"/><circle cx="18" cy="16" r="4"/><path d="M6 16l4-8h5l3 8M9 5h3"/></svg>Pedalar</button>
+  <button data-v="treinos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V14M9 20V8M14 20v-9M19 20V5"/></svg>Treinos</button>
+  <button data-v="evolucao"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19h18M4 15l5-5 4 3 7-7"/></svg>Evolução</button>
+</div></nav>
+
+<script>
+(function(){
+"use strict";
+/* ---------- utilidades ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LS = {
+  get(k,d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+const nf1 = new Intl.NumberFormat("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1});
+const nf2 = new Intl.NumberFormat("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+const mmss = s => { s = Math.max(0, Math.round(s)); const h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = s%60;
+  return h ? `${h}:${String(m).padStart(2,"0")}:${String(x).padStart(2,"0")}` : `${m}:${String(x).padStart(2,"0")}`; };
+const durTxt = s => { const m = Math.round(s/60); return m >= 60 ? `${Math.floor(m/60)} h ${m%60 ? (m%60)+" min" : ""}`.trim() : `${m} min`; };
+const uid = (pre) => (pre || "x") + "_" + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+
+const MODELOS = [
+  {id:"m-base30", nome:"Base 30 min", modelo:true, ordem:1, blocos:[{seg:300,tipo:"livre",alvo:0},{seg:1200,tipo:"rpm",alvo:85},{seg:300,tipo:"livre",alvo:0}]},
+  {id:"m-int43", nome:"Intervalado 4 × 3 min", modelo:true, ordem:2, blocos:[{seg:300,tipo:"livre",alvo:0},{seg:180,tipo:"watts",alvo:150},{seg:120,tipo:"watts",alvo:80},{seg:180,tipo:"watts",alvo:150},{seg:120,tipo:"watts",alvo:80},{seg:180,tipo:"watts",alvo:150},{seg:120,tipo:"watts",alvo:80},{seg:180,tipo:"watts",alvo:150},{seg:300,tipo:"livre",alvo:0}]},
+  {id:"m-escada", nome:"Escada de cadência 25 min", modelo:true, ordem:3, blocos:[{seg:300,tipo:"livre",alvo:0},{seg:240,tipo:"rpm",alvo:75},{seg:240,tipo:"rpm",alvo:85},{seg:240,tipo:"rpm",alvo:95},{seg:240,tipo:"rpm",alvo:85},{seg:240,tipo:"livre",alvo:0}]}
+];
+const PERFIS_PADRAO = [{id:"p1", nome:"Pessoa 1"}, {id:"p2", nome:"Pessoa 2"}];
+
+/* ---------- estado ---------- */
+const S = {
+  eu: LS.get("pd.eu", null), perfis: LS.get("pd.perfis", PERFIS_PADRAO), ordem:[],
+  treinos: LS.get("pd.treinos", MODELOS), pedaladas: LS.get("pd.pedaladas", []), fila: LS.get("pd.fila", []), metas: LS.get("pd.metas", {}),
+  view:"pedalar", quem:"todos", periodo: LS.get("pd.periodo", 12),
+  editando:null, aberto:null, confirmar:null, sincronizando:false
+};
+/* Link de configuração: ?api=<endereço>&eu=<perfil> grava neste aparelho e some da barra de endereço. */
+try{
+  const q = new URLSearchParams(location.search), a = q.get("api"), e = q.get("eu");
+  if(a && /^https:\/\/script\.google(usercontent)?\.com\//.test(a)) LS.set("pd.api", a);
+  if(e && /^[\w-]{1,20}$/.test(e)){ S.eu = e; LS.set("pd.eu", e); }
+  if(a || e) history.replaceState(null, "", location.pathname);
+}catch(e){}
+const META_PADRAO = {treinoMin:30, treinoKcal:200, semanaMin:90, semanaKcal:600};
+function metaDe(u){ const m = S.metas[String(u)] || {}, o = {}; for(const k in META_PADRAO) o[k] = +m[k] > 0 ? +m[k] : META_PADRAO[k]; return o; }
+function semanaDe(u){
+  const ini = inicioSemana(Date.now()).getTime(), ps = S.pedaladas.filter(p => String(p.uid) === String(u) && p.ts >= ini);
+  return {min: ps.reduce((a,p) => a + (p.dur||0), 0) / 60, kcal: ps.reduce((a,p) => a + (p.kj||0), 0)};
+}
+const COR = ["var(--a)","var(--b)"];
+function corDe(u){ const i = S.ordem.indexOf(u); return COR[(i < 0 ? 0 : i) % 2]; }
+function nomeDe(u){ const p = S.perfis.find(x => String(x.id) === String(u)); return p ? String(p.nome) : "—"; }
+function atualizarOrdem(){ S.ordem = S.perfis.map(p => String(p.id)); }
+
+/* ---------- armazenamento: planilha Google (Apps Script) + cópia neste celular ---------- */
+function setSync(txt, alerta){ const el = $("sync"); el.textContent = txt; el.classList.toggle("alerta", !!alerta); }
+const apiUrl = () => String(LS.get("pd.api", "") || "").trim();
+function salvarCache(){ LS.set("pd.perfis", S.perfis); LS.set("pd.treinos", S.treinos); LS.set("pd.pedaladas", S.pedaladas); LS.set("pd.fila", S.fila); LS.set("pd.metas", S.metas); }
+
+async function api(acao, dado){
+  const url = apiUrl(); if(!url) throw new Error("sem-endereco");
+  let r;
+  if(acao === "tudo") r = await fetch(url + (url.includes("?") ? "&" : "?") + "acao=tudo&t=" + Date.now(), {cache:"no-store"});
+  else r = await fetch(url, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify({acao, dado})});
+  const j = await r.json();
+  if(!j || !j.ok) throw new Error((j && j.erro) || "resposta inválida");
+  return j;
+}
+async function enviarFila(){
+  if(!apiUrl() || !S.fila.length) return;
+  const resto = [];
+  for(const item of S.fila){ try{ await api(item.acao, item.dado); }catch(e){ resto.push(item); } }
+  S.fila = resto; salvarCache();
+}
+async function sincronizar(){
+  if(S.sincronizando) return;
+  if(!apiUrl()){ setSync("Só neste celular. Toque em Ajustes para ligar a planilha compartilhada.", true); return; }
+  S.sincronizando = true; setSync("Sincronizando…");
+  try{
+    await enviarFila();
+    const j = await api("tudo");
+    if(Array.isArray(j.perfis) && j.perfis.length) S.perfis = j.perfis.map(p => ({id:String(p.id), nome:String(p.nome || "")}));
+    if(Array.isArray(j.metas)){ S.metas = {}; j.metas.forEach(m => { S.metas[String(m.id)] = m; }); }
+    const pend = S.fila.filter(f => f.acao === "salvarPedalada").map(f => f.dado);
+    const ids = new Set((j.pedaladas || []).map(p => String(p.id)));
+    S.pedaladas = (j.pedaladas || []).concat(pend.filter(p => !ids.has(String(p.id)))).sort((a,b) => b.ts - a.ts);
+    S.treinos = (j.treinos || []).sort((x,y) => (x.ordem ?? 0) - (y.ordem ?? 0) || String(x.nome).localeCompare(String(y.nome)));
+    salvarCache(); atualizarOrdem();
+    const h = new Date(); setSync(`Histórico compartilhado · atualizado às ${String(h.getHours()).padStart(2,"0")}:${String(h.getMinutes()).padStart(2,"0")}` + (S.fila.length ? ` · ${S.fila.length} aguardando envio` : ""));
+    renderTudo();
+  }catch(e){
+    setSync("Sem contato com a planilha agora. Mostrando o que está salvo neste celular.", true);
+  }finally{ S.sincronizando = false; }
+}
+async function enviar(acao, dado){
+  if(!apiUrl()){ salvarCache(); return "local"; }
+  try{ await api(acao, dado); salvarCache(); return "ok"; }
+  catch(e){ S.fila.push({acao, dado}); salvarCache(); return "pendente"; }
+}
+async function gravarPedalada(r){
+  S.pedaladas.unshift(r); salvarCache(); renderEvolucao();
+  const st = await enviar("salvarPedalada", r); renderEvolucao(); return st;
+}
+async function apagarPedalada(id){
+  S.pedaladas = S.pedaladas.filter(p => String(p.id) !== String(id));
+  S.fila = S.fila.filter(f => !(f.acao === "salvarPedalada" && String(f.dado.id) === String(id)));
+  renderEvolucao(); await enviar("apagarPedalada", {id});
+}
+async function gravarTreino(t){
+  const corpo = {id:t.id, nome:t.nome, blocos:t.blocos, ordem:t.ordem ?? Date.now(), autor:S.eu, atualizado:Date.now()};
+  const i = S.treinos.findIndex(x => x.id === t.id);
+  if(i >= 0) S.treinos[i] = corpo; else S.treinos.push(corpo);
+  renderTreinos(); renderEscolha(); await enviar("salvarTreino", corpo);
+}
+async function apagarTreino(id){
+  S.treinos = S.treinos.filter(t => t.id !== id); renderTreinos(); renderEscolha();
+  await enviar("apagarTreino", {id});
+}
+
+/* ---------- Bluetooth ---------- */
+const UUID = {ftms:0x1826, bike:0x2ad2, cps:0x1818, cpm:0x2a63, csc:0x1816, cscm:0x2a5b, hr:0x180d, hrm:0x2a37};
+const live = {pot:null, cad:null, vel:null, fc:null, t:0};
+const BT = {dev:null, fonte:null, demo:null, crank:null, crankT:0, tentandoReconectar:false};
+
+function btEstado(estado, titulo, sub){
+  const sig = $("bt-sig"); sig.className = "sig" + (estado === "on" ? " on" : estado === "busy" ? " busy" : "");
+  $("bt-titulo").textContent = titulo; $("bt-sub").textContent = sub;
+  const ligado = estado === "on";
+  $("bt-con").textContent = ligado ? "Desconectar" : "Conectar";
+  $("bt-con").disabled = estado === "busy";
+}
+function btMsg(txt){ const m = $("bt-msg"); m.hidden = !txt; m.textContent = txt || ""; }
+
+async function conectar(todos){
+  btMsg("");
+  if(!navigator.bluetooth){
+    btMsg("Este navegador não acessa Bluetooth. No iPhone, abra este link no app Bluefy (gratuito na App Store). No Mac ou Android, use o Chrome.");
+    return;
+  }
+  pararDemo();
+  const extras = [UUID.ftms, UUID.cps, UUID.csc, UUID.hr];
+  const opts = todos ? {acceptAllDevices:true, optionalServices:extras}
+                     : {filters:[{services:[UUID.ftms]},{services:[UUID.cps]},{services:[UUID.csc]}], optionalServices:[UUID.hr]};
+  let dev;
+  try{ dev = await navigator.bluetooth.requestDevice(opts); }
+  catch(e){
+    if(e && e.name === "NotFoundError") return; // pessoa fechou a lista
+    if(e && e.name === "SecurityError"){ btMsg("O Bluetooth foi bloqueado nesta tela. Abra o link do app direto no Bluefy, fora de outros apps."); return; }
+    btMsg("Não consegui abrir a busca de aparelhos: " + (e && e.message || e)); return;
+  }
+  BT.dev = dev;
+  dev.addEventListener("gattserverdisconnected", aoDesconectar);
+  await ligarServicos(dev);
+}
+
+async function ligarServicos(dev){
+  btEstado("busy", "Conectando…", dev.name || "Bike");
+  try{
+    const server = await dev.gatt.connect();
+    BT.fonte = null;
+    try{ const s = await server.getPrimaryService(UUID.ftms); const c = await s.getCharacteristic(UUID.bike);
+      c.addEventListener("characteristicvaluechanged", e => lerFTMS(e.target.value)); await c.startNotifications(); BT.fonte = "FTMS"; }catch(e){}
+    if(!BT.fonte){ try{ const s = await server.getPrimaryService(UUID.cps); const c = await s.getCharacteristic(UUID.cpm);
+      c.addEventListener("characteristicvaluechanged", e => lerCPS(e.target.value)); await c.startNotifications(); BT.fonte = "Cycling Power"; }catch(e){} }
+    if(!BT.fonte){ try{ const s = await server.getPrimaryService(UUID.csc); const c = await s.getCharacteristic(UUID.cscm);
+      c.addEventListener("characteristicvaluechanged", e => lerCSC(e.target.value)); await c.startNotifications(); BT.fonte = "Cadência"; }catch(e){} }
+    try{ const s = await server.getPrimaryService(UUID.hr); const c = await s.getCharacteristic(UUID.hrm);
+      c.addEventListener("characteristicvaluechanged", e => lerHR(e.target.value)); await c.startNotifications(); }catch(e){}
+    if(!BT.fonte){
+      try{ dev.gatt.disconnect(); }catch(e){}
+      btEstado("off", "Bike desconectada", "Ligue a bike e toque em Conectar.");
+      btMsg(`"${dev.name || "Esse aparelho"}" conectou, mas não envia os dados no padrão das bikes inteligentes. Me mande um print disso.`);
+      return;
+    }
+    btEstado("on", dev.name || "Bike conectada", "Recebendo dados · " + BT.fonte);
+  }catch(e){
+    btEstado("off", "Bike desconectada", "Ligue a bike e toque em Conectar.");
+    btMsg("A conexão falhou. Confira se nenhum outro app (Kinomap, Zwift) está conectado na bike e tente de novo.");
+  }
+}
+
+function aoDesconectar(){
+  live.pot = live.cad = live.vel = null;
+  if(BT.tentandoReconectar || !BT.dev){ btEstado("off","Bike desconectada","Ligue a bike e toque em Conectar."); return; }
+  BT.tentandoReconectar = true;
+  btEstado("busy","Sinal perdido","Tentando reconectar…");
+  setTimeout(async () => { if(BT.dev){ await ligarServicos(BT.dev); } BT.tentandoReconectar = false; }, 1500);
+}
+function desconectar(){ const d = BT.dev; BT.dev = null; try{ d && d.gatt.disconnect(); }catch(e){} btEstado("off","Bike desconectada","Ligue a bike e toque em Conectar."); }
+
+function lerFTMS(dv){
+  try{
+    let i = 0; const f = dv.getUint16(i, true); i += 2;
+    if(!(f & 0x0001)){ live.vel = dv.getUint16(i, true) / 100; i += 2; }
+    if(f & 0x0002) i += 2;
+    if(f & 0x0004){ live.cad = dv.getUint16(i, true) / 2; i += 2; }
+    if(f & 0x0008) i += 2;
+    if(f & 0x0010) i += 3;
+    if(f & 0x0020) i += 2;
+    if(f & 0x0040){ live.pot = dv.getInt16(i, true); i += 2; }
+    if(f & 0x0080) i += 2;
+    if(f & 0x0100) i += 5;
+    if(f & 0x0200){ const hr = dv.getUint8(i); i += 1; if(hr > 0) live.fc = hr; }
+    live.t = Date.now();
+  }catch(e){ live.t = Date.now(); }
+}
+function crankData(revs, t){
+  const now = Date.now();
+  if(BT.crank){
+    const dr = (revs - BT.crank.revs + 65536) % 65536, dt = ((t - BT.crank.t + 65536) % 65536) / 1024;
+    if(dr > 0 && dt > 0 && dr < 30){ live.cad = Math.round(dr / dt * 60); BT.crankT = now; }
+    else if(now - BT.crankT > 3000) live.cad = 0;
+  }
+  BT.crank = {revs, t};
+}
+function lerCPS(dv){
+  try{
+    let i = 0; const f = dv.getUint16(i, true); i += 2;
+    live.pot = dv.getInt16(i, true); i += 2;
+    if(f & 0x01) i += 1; if(f & 0x04) i += 2; if(f & 0x10) i += 6;
+    if(f & 0x20) crankData(dv.getUint16(i, true), dv.getUint16(i + 2, true));
+    live.t = Date.now();
+  }catch(e){ live.t = Date.now(); }
+}
+function lerCSC(dv){
+  try{ let i = 0; const f = dv.getUint8(i); i += 1; if(f & 1) i += 6; if(f & 2) crankData(dv.getUint16(i, true), dv.getUint16(i + 2, true)); live.t = Date.now(); }catch(e){}
+}
+function lerHR(dv){ try{ const f = dv.getUint8(0); live.fc = (f & 1) ? dv.getUint16(1, true) : dv.getUint8(1); }catch(e){} }
+
+/* Demonstração: dados simulados, nada é salvo */
+function iniciarDemo(){
+  if(BT.dev) desconectar();
+  pararDemo(); btMsg("");
+  btEstado("on","Modo demonstração","Dados simulados. Treinos de teste não são salvos.");
+  $("bt-con").textContent = "Sair do teste";
+  let ph = 0;
+  BT.demo = setInterval(() => {
+    ph += 1;
+    const b = R.estado === "rodando" ? blocoAtual() : null;
+    let cad = 82, pot = 120;
+    if(b && b.bloco.tipo === "rpm") cad = b.bloco.alvo;
+    if(b && b.bloco.tipo === "watts") pot = b.bloco.alvo;
+    live.cad = Math.max(0, Math.round(cad + Math.sin(ph/4) * 4 + (Math.random() - .5) * 4));
+    live.pot = Math.max(0, Math.round(pot + Math.sin(ph/6) * 12 + (Math.random() - .5) * 10));
+    live.vel = live.cad * 0.37;
+    live.t = Date.now();
+  }, 1000);
+}
+function pararDemo(){ if(BT.demo){ clearInterval(BT.demo); BT.demo = null; live.pot = live.cad = live.vel = null; btEstado("off","Bike desconectada","Ligue a bike, dê umas pedaladas e toque em Conectar."); } }
+
+/* ---------- treino em andamento ---------- */
+const R = {estado:"parado", treino:null, seg:0, dist:0, j:0, potMax:0, somaP:0, somaC:0, nC:0, somaV:0, nV:0, somaFc:0, nFc:0,
+  comMeta:0, naMeta:0, serie:{p:[],c:[]}, buf:{p:0,c:0,n:0}, timer:null, inicio:null, ultimoBloco:-1, demo:false};
+let wakeLock = null, audio = null, confirmaFim = null;
+
+function blocoAtual(){
+  const t = R.treino; if(!t || !t.blocos || !t.blocos.length) return null;
+  let acc = 0;
+  for(let i = 0; i < t.blocos.length; i++){
+    const b = t.blocos[i];
+    if(R.seg < acc + b.seg) return {i, bloco:b, inicio:acc, resta:acc + b.seg - R.seg};
+    acc += b.seg;
+  }
+  return {i:t.blocos.length, fim:true};
+}
+function avaliar(b, cad, pot){
+  if(!b || b.tipo === "livre") return null;
+  if(b.tipo === "rpm"){ if(cad == null) return null; return cad < b.alvo - 5 ? "baixo" : cad > b.alvo + 5 ? "alto" : "ok"; }
+  if(pot == null) return null; const tol = Math.max(10, b.alvo * 0.1);
+  return pot < b.alvo - tol ? "baixo" : pot > b.alvo + tol ? "alto" : "ok";
+}
+const metaTxt = b => b.tipo === "rpm" ? `${b.alvo} rpm` : b.tipo === "watts" ? `${b.alvo} W` : "Livre";
+
+function bip(dupla){
+  if(!audio) return;
+  try{
+    const toca = (q) => { const o = audio.createOscillator(), g = audio.createGain(); o.frequency.value = 880; g.gain.value = .12;
+      o.connect(g); g.connect(audio.destination); o.start(audio.currentTime + q); o.stop(audio.currentTime + q + .15); };
+    toca(0); if(dupla) toca(.25);
+  }catch(e){}
+}
+async function manterTela(){ try{ if(navigator.wakeLock) wakeLock = await navigator.wakeLock.request("screen"); }catch(e){} }
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && R.estado === "rodando") manterTela(); });
+
+function iniciar(){
+  try{ audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume && audio.resume(); }catch(e){}
+  if(R.estado === "parado"){
+    const id = $("sel-treino").value;
+    Object.assign(R, {treino: S.treinos.find(t => t.id === id) || null, seg:0, dist:0, j:0, potMax:0, somaP:0, somaC:0, nC:0, somaV:0, nV:0, somaFc:0, nFc:0,
+      comMeta:0, naMeta:0, serie:{p:[],c:[]}, buf:{p:0,c:0,n:0}, inicio:new Date(), ultimoBloco:-1, demo: !!BT.demo, metaBatida:false});
+    $("resumo").hidden = true;
+  }
+  R.estado = "rodando";
+  clearInterval(R.timer); R.timer = setInterval(tick, 1000);
+  manterTela(); renderControles(); atualizarPainel();
+}
+function pausar(){ R.estado = "pausado"; clearInterval(R.timer); try{ wakeLock && wakeLock.release(); }catch(e){} renderControles(); }
+
+function tick(){
+  const fresco = Date.now() - live.t < 5000;
+  const p = fresco && live.pot != null ? Math.max(0, live.pot) : null;
+  const c = fresco && live.cad != null ? Math.max(0, live.cad) : null;
+  const v = fresco && live.vel != null ? Math.max(0, live.vel) : null;
+  R.seg += 1;
+  if(p != null){ R.j += p; R.somaP += p; R.potMax = Math.max(R.potMax, p); }
+  if(c != null && c > 0){ R.somaC += c; R.nC += 1; }
+  if(v != null){ R.dist += v / 3.6; if(v > 0){ R.somaV += v; R.nV += 1; } }
+  if(fresco && live.fc){ R.somaFc += live.fc; R.nFc += 1; }
+  const mt = metaDe(S.eu);
+  if(!R.metaBatida && R.seg / 60 >= mt.treinoMin && R.j / 1000 >= mt.treinoKcal){ R.metaBatida = true; bip(true); }
+  const b = blocoAtual();
+  if(b && !b.fim){
+    const av = avaliar(b.bloco, c, p);
+    if(b.bloco.tipo !== "livre"){ R.comMeta += 1; if(av === "ok") R.naMeta += 1; }
+    if(b.i !== R.ultimoBloco){ if(R.ultimoBloco >= 0) bip(false); R.ultimoBloco = b.i; }
+    if(b.resta === 3) bip(false);
+  } else if(b && b.fim && R.ultimoBloco !== b.i){ R.ultimoBloco = b.i; bip(true); }
+  R.buf.p += p || 0; R.buf.c += c || 0; R.buf.n += 1;
+  if(R.buf.n >= 5){ R.serie.p.push(Math.round(R.buf.p / R.buf.n)); R.serie.c.push(Math.round(R.buf.c / R.buf.n)); R.buf = {p:0,c:0,n:0}; }
+  atualizarPainel();
+}
+
+async function finalizar(){
+  if(!confirmaFim){
+    $("a-finalizar").textContent = "Toque de novo para encerrar";
+    confirmaFim = setTimeout(() => { confirmaFim = null; $("a-finalizar").textContent = "Finalizar"; }, 3000);
+    return;
+  }
+  clearTimeout(confirmaFim); confirmaFim = null; $("a-finalizar").textContent = "Finalizar";
+  clearInterval(R.timer); R.estado = "parado";
+  try{ wakeLock && wakeLock.release(); }catch(e){}
+  const seg = R.seg;
+  const reg = {
+    id: uid("r"), uid: S.eu, ts: R.inicio ? R.inicio.getTime() : Date.now(), dur: seg,
+    dist: Math.round(R.dist), kj: Math.round(R.j / 1000),
+    potMed: seg ? Math.round(R.somaP / seg) : 0, potMax: Math.round(R.potMax),
+    cadMed: R.nC ? Math.round(R.somaC / R.nC) : 0, velMed: R.nV ? Math.round(R.somaV / R.nV * 10) / 10 : 0,
+    fcMed: R.nFc ? Math.round(R.somaFc / R.nFc) : null,
+    treino: R.treino ? R.treino.nome : null, treinoId: R.treino ? R.treino.id : null,
+    aderencia: R.comMeta ? Math.round(R.naMeta / R.comMeta * 100) : null,
+    serie: R.serie, passo: 5
+  };
+  let status;
+  if(R.demo) status = "demo";
+  else if(seg < 60) status = "curto";
+  else status = await gravarPedalada(reg);
+  renderResumo(reg, status);
+  renderControles(); atualizarPainel();
+}
+
+/* ---------- render: pedalar ---------- */
+function perfilHTML(blocos, atual){
+  if(!blocos || !blocos.length) return "";
+  const tot = blocos.reduce((a,b) => a + b.seg, 0) || 1;
+  return blocos.map((b,i) => {
+    let h = .22;
+    if(b.tipo === "rpm") h = Math.min(1, Math.max(.3, (b.alvo - 50) / 60));
+    if(b.tipo === "watts") h = Math.min(1, Math.max(.3, b.alvo / 260));
+    return `<i class="${b.tipo}${i === atual ? " atual" : ""}" style="flex:${(b.seg/tot*100).toFixed(2)};height:${Math.round(h*100)}%"></i>`;
+  }).join("");
+}
+function descTreino(t){
+  if(!t) return "Pedale no seu ritmo, sem metas. Tudo fica registrado.";
+  const tot = t.blocos.reduce((a,b) => a + b.seg, 0);
+  return `${durTxt(tot)} · ${t.blocos.length} ${t.blocos.length === 1 ? "bloco" : "blocos"}`;
+}
+function renderEscolha(){
+  const sel = $("sel-treino"), atual = sel.value;
+  sel.innerHTML = `<option value="">Pedal livre</option>` + S.treinos.map(t => `<option value="${esc(t.id)}">${esc(t.nome)}</option>`).join("");
+  if(S.treinos.some(t => t.id === atual)) sel.value = atual;
+  const t = S.treinos.find(x => x.id === sel.value);
+  $("treino-prev").innerHTML = t ? perfilHTML(t.blocos, -1) : "";
+  $("treino-prev").hidden = !t;
+  $("treino-desc").textContent = descTreino(t);
+}
+function setM(id, v){ $(id).textContent = v; }
+function setBarra(id, v, alvo, un){
+  const el = $(id), f = alvo > 0 ? Math.min(1, v / alvo) : 0;
+  el.style.width = (f * 100).toFixed(1) + "%"; el.classList.toggle("cheia", f >= 1);
+  $(id + "-v").textContent = `${Math.floor(v)} de ${alvo} ${un}`;
+}
+function atualizarMetas(){
+  const m = metaDe(S.eu), ativo = R.estado !== "parado", conta = ativo && !R.demo;
+  const tMin = ativo ? R.seg / 60 : 0, tK = ativo ? R.j / 1000 : 0;
+  setBarra("mt-tt", tMin, m.treinoMin, "min"); setBarra("mt-te", tK, m.treinoKcal, "kcal");
+  $("mt-chip").hidden = !(ativo && tMin >= m.treinoMin && tK >= m.treinoKcal);
+  const s = semanaDe(S.eu), sMin = s.min + (conta ? tMin : 0), sK = s.kcal + (conta ? tK : 0);
+  setBarra("mt-st", sMin, m.semanaMin, "min"); setBarra("mt-se", sK, m.semanaKcal, "kcal");
+  $("ms-chip").hidden = !(sMin >= m.semanaMin && sK >= m.semanaKcal);
+}
+function atualizarPainel(){
+  atualizarMetas();
+  const fresco = Date.now() - live.t < 5000;
+  setM("m-pot", fresco && live.pot != null ? Math.max(0, Math.round(live.pot)) : "—");
+  setM("m-cad", fresco && live.cad != null ? Math.round(live.cad) : "—");
+  setM("m-vel", fresco && live.vel != null ? nf1.format(live.vel) : "—");
+  setM("m-tempo", mmss(R.seg));
+  setM("m-dist", nf2.format(R.dist / 1000));
+  setM("m-kcal", Math.round(R.j / 1000));
+  $("m-fc-box").hidden = !live.fc;
+  if(live.fc) setM("m-fc", live.fc);
+  document.querySelectorAll("#metricas .m").forEach(el => el.classList.toggle("stale", !fresco && (BT.dev || BT.demo) ? true : false));
+
+  const ativo = R.estado !== "parado" && R.treino;
+  $("alvo").hidden = !ativo;
+  $("escolha").hidden = R.estado !== "parado";
+  if(!ativo) return;
+  const b = blocoAtual();
+  const n = R.treino.blocos.length;
+  if(b.fim){
+    $("alvo-bloco").textContent = "Treino concluído";
+    $("alvo-meta").textContent = "Pedal livre"; $("alvo-resta").textContent = "";
+    $("alvo-chip").className = "chip ok"; $("alvo-chip").textContent = R.comMeta ? `${Math.round(R.naMeta/R.comMeta*100)}% na meta` : "Feito";
+    $("alvo-prog").style.width = "100%";
+    $("alvo-prox").textContent = "Continue livre ou toque em Finalizar para salvar.";
+    $("alvo-perfil").innerHTML = perfilHTML(R.treino.blocos, -1);
+    return;
+  }
+  $("alvo-bloco").textContent = `Bloco ${b.i + 1} de ${n}`;
+  $("alvo-meta").textContent = metaTxt(b.bloco);
+  $("alvo-resta").textContent = mmss(b.resta);
+  $("alvo-prog").style.width = ((1 - b.resta / b.bloco.seg) * 100).toFixed(1) + "%";
+  const av = avaliar(b.bloco, fresco ? live.cad : null, fresco ? live.pot : null);
+  const chip = $("alvo-chip");
+  chip.className = "chip" + (av ? " " + av : "");
+  chip.textContent = av === "ok" ? "Na meta" : av === "baixo" ? (b.bloco.tipo === "rpm" ? "Acelere o giro" : "Aumente a carga") : av === "alto" ? (b.bloco.tipo === "rpm" ? "Giro acima" : "Carga acima") : (b.bloco.tipo === "livre" ? "Sem meta" : "Aguardando dados");
+  const prox = R.treino.blocos[b.i + 1];
+  $("alvo-prox").textContent = prox ? `Depois: ${mmss(prox.seg)} · ${metaTxt(prox)}` : "Último bloco";
+  $("alvo-perfil").innerHTML = perfilHTML(R.treino.blocos, b.i);
+}
+function renderControles(){
+  const e = R.estado;
+  $("a-iniciar").hidden = e === "rodando";
+  $("a-iniciar").textContent = e === "pausado" ? "Retomar" : "Começar";
+  $("a-pausar").hidden = e !== "rodando";
+  $("a-finalizar").hidden = e === "parado";
+}
+function renderResumo(r, status){
+  const el = $("resumo");
+  const aviso = {
+    ok: "Salvo no histórico de vocês.",
+    local: "Salvo neste celular.",
+    pendente: "Não consegui enviar ao histórico agora. Guardei neste celular e envio na próxima vez que o app abrir.",
+    demo: "Treino de teste: não foi salvo.",
+    curto: "Menos de 1 minuto: não foi salvo."
+  }[status] || "";
+  el.innerHTML = `<div><span class="eyebrow">${esc(r.treino || "Pedal livre")}</span><h2>${durTxt(r.dur)} pedalados</h2></div>
+    <div class="kv">
+      <div><span>Distância</span><b>${nf2.format(r.dist/1000)} km</b></div>
+      <div><span>Pot. média</span><b>${r.potMed} W</b></div>
+      <div><span>Cadência</span><b>${r.cadMed} rpm</b></div>
+      <div><span>Energia</span><b>${r.kj} kcal</b></div>
+      <div><span>Pot. máx.</span><b>${r.potMax} W</b></div>
+      <div><span>Na meta</span><b>${r.aderencia == null ? "—" : r.aderencia + "%"}</b></div>
+    </div>
+    <span class="sub">Meta do treino: ${Math.floor(r.dur/60)} de ${metaDe(S.eu).treinoMin} min · ${r.kj} de ${metaDe(S.eu).treinoKcal} kcal${r.dur/60 >= metaDe(S.eu).treinoMin && r.kj >= metaDe(S.eu).treinoKcal ? " · batida" : ""}</span>
+    <span class="sub">${esc(aviso)}</span>`;
+  el.hidden = false;
+  R.seg = 0; R.dist = 0; R.j = 0;
+}
+
+/* ---------- render: treinos ---------- */
+function renderTreinos(){
+  const lista = $("t-lista");
+  if(S.editando){ lista.hidden = true; $("t-novo").hidden = true; return; }
+  lista.hidden = false; $("t-novo").hidden = false; $("t-editor").hidden = true;
+  if(!S.treinos.length){
+    lista.innerHTML = `<div class="card vazio"><b>Nenhum treino ainda</b>Toque em Novo treino e monte os blocos: por exemplo, 5 min livre, 10 min a 85 rpm, 5 min livre.</div>`;
+    return;
+  }
+  lista.innerHTML = S.treinos.map(t => {
+    const conf = S.confirmar === t.id;
+    return `<div class="card treino">
+      <div class="treino-top"><div><h3>${esc(t.nome)}</h3><span class="sub">${esc(descTreino(t))}</span></div>${t.modelo ? `<span class="tag">modelo</span>` : ""}</div>
+      <div class="perfil-treino">${perfilHTML(t.blocos, -1)}</div>
+      <div class="linha-btn">
+        <button class="btn" data-acao="usar" data-id="${esc(t.id)}">Pedalar este</button>
+        <button class="btn sec" data-acao="editar" data-id="${esc(t.id)}">Editar</button>
+        <button class="btn sec" data-acao="duplicar" data-id="${esc(t.id)}">Duplicar</button>
+        <button class="btn ${conf ? "perigo" : "fantasma"}" data-acao="apagar" data-id="${esc(t.id)}">${conf ? "Confirmar exclusão" : "Excluir"}</button>
+      </div></div>`;
+  }).join("");
+}
+function abrirEditor(t){
+  S.editando = t ? JSON.parse(JSON.stringify(t)) : {id:uid("t"), nome:"", blocos:[{seg:300,tipo:"livre",alvo:0},{seg:600,tipo:"rpm",alvo:85},{seg:300,tipo:"livre",alvo:0}]};
+  renderTreinos(); renderEditor();
+}
+function renderEditor(){
+  const e = S.editando, ed = $("t-editor");
+  if(!e){ ed.hidden = true; return; }
+  ed.hidden = false;
+  const tot = e.blocos.reduce((a,b) => a + b.seg, 0);
+  ed.innerHTML = `<div class="field"><label for="ed-nome">Nome do treino</label><input type="text" id="ed-nome" maxlength="60" placeholder="Ex.: Giro leve 25 min" value="${esc(e.nome)}"></div>
+    <div class="editor-blocos">${e.blocos.map((b,i) => `
+      <div class="bloco">
+        <div class="field"><label for="ed-min-${i}">Minutos</label><input type="number" inputmode="decimal" id="ed-min-${i}" min="0.5" max="120" step="0.5" value="${+(b.seg/60).toFixed(2)}" data-i="${i}" data-campo="min"></div>
+        <div class="field"><label for="ed-tipo-${i}">Meta</label><select id="ed-tipo-${i}" data-i="${i}" data-campo="tipo">
+          <option value="livre"${b.tipo === "livre" ? " selected" : ""}>Livre</option>
+          <option value="rpm"${b.tipo === "rpm" ? " selected" : ""}>Cadência (rpm)</option>
+          <option value="watts"${b.tipo === "watts" ? " selected" : ""}>Potência (W)</option></select></div>
+        <div class="field"><label for="ed-alvo-${i}">Alvo</label><input type="number" inputmode="numeric" id="ed-alvo-${i}" min="0" max="1500" step="1" value="${b.tipo === "livre" ? "" : b.alvo}" ${b.tipo === "livre" ? "disabled" : ""} data-i="${i}" data-campo="alvo"></div>
+        <div class="bloco-acoes">
+          <button class="ico" data-mover="-1" data-i="${i}" aria-label="Subir bloco" ${i === 0 ? "disabled" : ""}>↑</button>
+          <button class="ico" data-mover="1" data-i="${i}" aria-label="Descer bloco" ${i === e.blocos.length - 1 ? "disabled" : ""}>↓</button>
+          <button class="ico" data-remover="${i}" aria-label="Remover bloco" ${e.blocos.length === 1 ? "disabled" : ""}>×</button>
+        </div>
+      </div>`).join("")}</div>
+    <div class="perfil-treino" id="ed-perfil">${perfilHTML(e.blocos, -1)}</div>
+    <div class="linha-btn" style="justify-content:space-between;align-items:center"><span class="total" id="ed-total">Total: ${mmss(tot)}</span><button class="btn sec" id="ed-add">+ Bloco</button></div>
+    <p class="msg" id="ed-msg" hidden></p>
+    <div class="linha-btn"><button class="btn" id="ed-salvar">Salvar treino</button><button class="btn fantasma" id="ed-cancelar">Cancelar</button></div>`;
+}
+
+/* ---------- render: evolução ---------- */
+function todasPedaladas(){
+  const pend = new Set(S.fila.filter(f => f.acao === "salvarPedalada").map(f => String(f.dado.id)));
+  return S.pedaladas.map(p => pend.has(String(p.id)) ? Object.assign({pendente:true}, p) : p);
+}
+function inicioSemana(d){ const x = new Date(d); x.setHours(0,0,0,0); const dia = (x.getDay() + 6) % 7; x.setDate(x.getDate() - dia); return x; }
+function eixoMax(v){ if(v <= 0) return 10; const p = Math.pow(10, Math.floor(Math.log10(v))); for(const m of [1,2,2.5,5,10]){ if(m*p >= v) return m*p; } return 10*p; }
+
+function renderEvolucao(){
+  // filtros
+  const pessoas = S.ordem.slice();
+  const fq = $("f-quem");
+  fq.innerHTML = [`<button data-q="todos" aria-pressed="${S.quem === "todos"}">Os dois</button>`]
+    .concat(pessoas.map(u => `<button data-q="${esc(u)}" aria-pressed="${S.quem === u}">${esc(nomeDe(u))}</button>`)).join("");
+  if(S.quem !== "todos" && !pessoas.includes(S.quem)) S.quem = "todos";
+  document.querySelectorAll("#f-periodo button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.p === S.periodo)));
+
+  const semanas = S.periodo;
+  const ini = inicioSemana(Date.now()); ini.setDate(ini.getDate() - 7*(semanas - 1));
+  const todas = todasPedaladas().filter(p => p.ts >= ini.getTime());
+  const vis = S.quem === "todos" ? todas : todas.filter(p => p.uid === S.quem);
+  const quem = S.quem === "todos" ? pessoas : [S.quem];
+
+  // blocos de resumo
+  $("e-semana").innerHTML = quem.map(u => {
+    const m = metaDe(u), w = semanaDe(u), cor = corDe(u);
+    const linha = (rot, v, alvo, un) => `<span class="sub">${rot} · ${Math.floor(v)} de ${alvo} ${un}</span><div class="barra"><i style="width:${(Math.min(1, v/alvo)*100).toFixed(1)}%;background:${v >= alvo ? "var(--ok)" : cor}"></i></div>`;
+    return `<div class="meta-pessoa"><div class="tile-nome"><span class="dot" style="background:${cor}"></span><span>${esc(nomeDe(u))}</span></div>${linha("Tempo", w.min, m.semanaMin, "min")}${linha("Energia", w.kcal, m.semanaKcal, "kcal")}</div>`;
+  }).join("");
+  $("e-tiles").innerHTML = quem.map(u => {
+    const ps = todas.filter(p => p.uid === u);
+    const seg = ps.reduce((a,p) => a + (p.dur||0), 0), km = ps.reduce((a,p) => a + (p.dist||0), 0)/1000, kcal = ps.reduce((a,p) => a + (p.kj||0), 0);
+    return `<div class="card tile"><div class="tile-nome"><span class="dot" style="background:${corDe(u)}"></span><span>${esc(nomeDe(u))}</span></div>
+      <div class="kv"><div><span>Treinos</span><b>${ps.length}</b></div><div><span>Tempo</span><b>${(seg/3600).toFixed(1).replace(".",",")} h</b></div>
+      <div><span>Distância</span><b>${nf1.format(km)} km</b></div><div><span>Energia</span><b>${kcal.toLocaleString("pt-BR")}</b></div></div></div>`;
+  }).join("") + (quem.length === 1 ? `<div></div>` : "");
+
+  // barras por semana
+  const W = 340, H = 170, L = 30, B = 22, T = 10, Rr = 6;
+  const sem = []; for(let i = 0; i < semanas; i++){ const d = new Date(ini); d.setDate(d.getDate() + 7*i); sem.push(d); }
+  const minutos = quem.map(u => sem.map(d => { const f = d.getTime() + 7*864e5;
+    return todas.filter(p => p.uid === u && p.ts >= d.getTime() && p.ts < f).reduce((a,p) => a + p.dur/60, 0); }));
+  const maxM = eixoMax(Math.max(10, ...minutos.flat()));
+  const larg = (W - L - Rr) / semanas, gw = larg * .74, bw = gw / quem.length;
+  const y = v => T + (H - T - B) * (1 - v / maxM);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Minutos por semana">`;
+  for(let k = 0; k <= 4; k++){ const v = maxM * k / 4, yy = y(v); svg += `<line class="grade" x1="${L}" x2="${W - Rr}" y1="${yy}" y2="${yy}"/><text class="eixo" x="${L - 5}" y="${yy + 3}" text-anchor="end">${Math.round(v)}</text>`; }
+  const passoRot = semanas <= 4 ? 1 : semanas <= 12 ? 2 : 8;
+  sem.forEach((d, i) => {
+    const x0 = L + i * larg + (larg - gw) / 2;
+    quem.forEach((u, j) => { const v = minutos[j][i]; if(v > 0){ const yy = y(v); svg += `<rect x="${(x0 + j*bw).toFixed(1)}" y="${yy.toFixed(1)}" width="${Math.max(1.5, bw - 1).toFixed(1)}" height="${(H - B - yy).toFixed(1)}" rx="2" fill="${corDe(u)}"/>`; } });
+    if(i % passoRot === 0 || i === semanas - 1) svg += `<text class="eixo" x="${(L + i*larg + larg/2).toFixed(1)}" y="${H - 7}" text-anchor="middle">${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}</text>`;
+  });
+  svg += `</svg>`;
+  $("e-semanas").innerHTML = svg;
+  const leg = quem.map(u => `<span><i class="dot" style="background:${corDe(u)}"></i>${esc(nomeDe(u))}</span>`).join("");
+  $("e-leg1").innerHTML = leg + `<span>Semanas começam na segunda</span>`;
+
+  // potência média por treino
+  const comPot = vis.filter(p => p.potMed > 0).sort((a,b) => a.ts - b.ts);
+  if(comPot.length < 2){
+    $("e-pot").innerHTML = `<div class="vazio">O gráfico aparece a partir de 2 treinos com potência no período.</div>`; $("e-leg2").innerHTML = "";
+  } else {
+    const t0 = ini.getTime(), t1 = Date.now(), maxP = eixoMax(Math.max(...comPot.map(p => p.potMed)) * 1.1);
+    const xp = t => L + (W - L - Rr - 4) * (t - t0) / (t1 - t0 || 1) + 2, yp = v => T + (H - T - B) * (1 - v / maxP);
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Potência média por treino">`;
+    for(let k = 0; k <= 4; k++){ const v = maxP*k/4, yy = yp(v); s += `<line class="grade" x1="${L}" x2="${W - Rr}" y1="${yy}" y2="${yy}"/><text class="eixo" x="${L - 5}" y="${yy + 3}" text-anchor="end">${Math.round(v)}</text>`; }
+    [0, .5, 1].forEach(f => { const t = t0 + (t1 - t0)*f, d = new Date(t); s += `<text class="eixo" x="${xp(t).toFixed(1)}" y="${H - 7}" text-anchor="${f === 0 ? "start" : f === 1 ? "end" : "middle"}">${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}</text>`; });
+    quem.forEach(u => {
+      const pts = comPot.filter(p => p.uid === u); if(!pts.length) return;
+      const cor = corDe(u);
+      if(pts.length > 1) s += `<polyline fill="none" stroke="${cor}" stroke-width="2" stroke-linejoin="round" points="${pts.map(p => xp(p.ts).toFixed(1)+","+yp(p.potMed).toFixed(1)).join(" ")}"/>`;
+      pts.forEach((p, k) => { const ult = k === pts.length - 1; s += `<circle cx="${xp(p.ts).toFixed(1)}" cy="${yp(p.potMed).toFixed(1)}" r="${ult ? 4.5 : 3}" fill="${ult ? cor : "var(--surface)"}" stroke="${cor}" stroke-width="2"/>`; });
+    });
+    s += `</svg>`;
+    $("e-pot").innerHTML = s;
+    $("e-leg2").innerHTML = quem.map(u => `<span><i class="dot" style="background:${corDe(u)}"></i>${esc(nomeDe(u))}</span>`).join("") + `<span>Ponto cheio = último treino</span>`;
+  }
+
+  // lista
+  const lista = vis.slice().sort((a,b) => b.ts - a.ts).slice(0, 60);
+  if(!lista.length){
+    $("e-lista").innerHTML = `<div class="card vazio"><b>Nenhuma pedalada no período</b>Conecte a bike na aba Pedalar e toque em Começar. Ao finalizar, o treino aparece aqui para vocês dois.</div>`;
+    return;
+  }
+  const fmtD = new Intl.DateTimeFormat("pt-BR",{weekday:"short", day:"2-digit", month:"2-digit"});
+  const fmtH = new Intl.DateTimeFormat("pt-BR",{hour:"2-digit", minute:"2-digit"});
+  $("e-lista").innerHTML = lista.map(p => {
+    const aberto = S.aberto === p.id, conf = S.confirmar === "p:" + p.id, d = new Date(p.ts);
+    return `<div class="card pedalada">
+      <button data-abrir="${esc(p.id)}" aria-expanded="${aberto}">
+        <span class="dot" style="background:${corDe(p.uid)}"></span>
+        <span class="info"><b>${esc(p.treino || "Pedal livre")}</b><span class="sub">${esc(nomeDe(p.uid))} · ${fmtD.format(d)} · ${fmtH.format(d)}${p.pendente ? " · aguardando envio" : ""}</span></span>
+        <span class="nums">${durTxt(p.dur)}<br><span class="sub">${p.potMed ? p.potMed + " W" : nf1.format((p.dist||0)/1000) + " km"}</span></span>
+      </button>
+      ${aberto ? `<div class="det">
+        <div class="kv">
+          <div><span>Distância</span><b>${nf2.format((p.dist||0)/1000)} km</b></div>
+          <div><span>Cadência</span><b>${p.cadMed || "—"} rpm</b></div>
+          <div><span>Velocidade</span><b>${p.velMed ? nf1.format(p.velMed) : "—"}</b></div>
+          <div><span>Pot. máx.</span><b>${p.potMax || "—"} W</b></div>
+          <div><span>Energia</span><b>${p.kj || 0} kcal</b></div>
+          <div><span>Na meta</span><b>${p.aderencia == null ? "—" : p.aderencia + "%"}</b></div>
+          ${p.fcMed ? `<div><span>FC média</span><b>${p.fcMed} bpm</b></div>` : ""}
+        </div>
+        ${miniSerie(p)}
+        ${p.pendente ? "" : `<div class="linha-btn"><button class="btn ${conf ? "perigo" : "fantasma"}" data-apagar="${esc(p.id)}">${conf ? "Confirmar exclusão" : "Excluir pedalada"}</button></div>`}
+      </div>` : ""}
+    </div>`;
+  }).join("");
+}
+function miniSerie(p){
+  const s = p.serie && p.serie.p; if(!s || s.length < 3) return "";
+  const usa = s.some(v => v > 0) ? s : (p.serie.c || []); if(!usa.length) return "";
+  const W = 320, H = 70, max = Math.max(...usa) * 1.1 || 1;
+  const pts = usa.map((v,i) => `${(i/(usa.length-1)*W).toFixed(1)},${(H - v/max*(H-4)).toFixed(1)}`).join(" ");
+  const cor = corDe(p.uid);
+  return `<div class="grafico"><span class="eyebrow">${usa === s ? "Potência" : "Cadência"} ao longo do treino</span>
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:70px"><polygon points="0,${H} ${pts} ${W},${H}" fill="${cor}" opacity=".15"/><polyline points="${pts}" fill="none" stroke="${cor}" stroke-width="1.8" vector-effect="non-scaling-stroke"/></svg></div>`;
+}
+function renderEu(){ $("eu-nome").textContent = S.eu ? nomeDe(S.eu) : "Escolha quem é você"; $("eu-dot").style.background = corDe(S.eu); }
+function renderAjustes(){
+  $("aj-perfis").innerHTML = S.perfis.map(p => `<button data-eu="${esc(p.id)}" aria-pressed="${String(p.id) === String(S.eu)}">${esc(p.nome)}</button>`).join("");
+  $("aj-api").value = apiUrl();
+  const m = metaDe(S.eu);
+  $("aj-nome").value = S.eu ? nomeDe(S.eu) : "";
+  $("aj-tm").value = m.treinoMin; $("aj-tk").value = m.treinoKcal; $("aj-sm").value = m.semanaMin; $("aj-sk").value = m.semanaKcal;
+  AJ.nome = false; AJ.metas = false;
+  const outro = S.perfis.find(p => String(p.id) !== String(S.eu));
+  const temLink = !!(apiUrl() && S.eu && outro && /^https?:/.test(location.protocol));
+  $("aj-link-box").hidden = !temLink;
+  if(temLink) $("aj-link").value = `${location.origin}${location.pathname}?api=${encodeURIComponent(apiUrl())}&eu=${encodeURIComponent(outro.id)}`;
+}
+const AJ = {nome:false, metas:false};
+function abrirAjustes(){ renderAjustes(); $("ajustes").hidden = false; $("ajustes").scrollIntoView({block:"start"}); }
+function renderTudo(){ atualizarOrdem(); renderEu(); renderEscolha(); renderTreinos(); renderEvolucao(); renderControles(); atualizarPainel(); }
+
+/* ---------- eventos ---------- */
+function mostrar(v){
+  S.view = v;
+  ["pedalar","treinos","evolucao"].forEach(n => { $("v-" + n).hidden = n !== v; });
+  document.querySelectorAll(".abas button").forEach(b => { if(b.dataset.v === v) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
+  window.scrollTo(0,0);
+}
+document.querySelectorAll(".abas button").forEach(b => b.addEventListener("click", () => mostrar(b.dataset.v)));
+
+$("bt-con").addEventListener("click", () => { if(BT.demo) pararDemo(); else if(BT.dev && BT.dev.gatt && BT.dev.gatt.connected) desconectar(); else conectar(false); });
+$("bt-todos").addEventListener("click", () => conectar(true));
+$("bt-demo").addEventListener("click", iniciarDemo);
+$("sel-treino").addEventListener("change", renderEscolha);
+$("a-iniciar").addEventListener("click", iniciar);
+$("a-pausar").addEventListener("click", pausar);
+$("a-finalizar").addEventListener("click", finalizar);
+
+$("t-novo").addEventListener("click", () => abrirEditor(null));
+$("t-lista").addEventListener("click", async ev => {
+  const b = ev.target.closest("button[data-acao]"); if(!b) return;
+  const t = S.treinos.find(x => x.id === b.dataset.id); if(!t) return;
+  const a = b.dataset.acao;
+  if(a !== "apagar") S.confirmar = null;
+  if(a === "usar"){ $("sel-treino").value = t.id; renderEscolha(); mostrar("pedalar"); }
+  if(a === "editar") abrirEditor(t);
+  if(a === "duplicar"){ const c = JSON.parse(JSON.stringify(t)); c.id = uid("t"); c.nome = (t.nome + " (cópia)").slice(0,60); delete c.modelo; abrirEditor(c); }
+  if(a === "apagar"){
+    if(S.confirmar !== t.id){ S.confirmar = t.id; renderTreinos(); setTimeout(() => { if(S.confirmar === t.id){ S.confirmar = null; renderTreinos(); } }, 4000); return; }
+    S.confirmar = null;
+    try{ await apagarTreino(t.id); }catch(e){ setSync("Não consegui excluir o treino.", true); }
+  }
+});
+const editor = $("t-editor");
+editor.addEventListener("input", ev => {
+  const el = ev.target, e = S.editando; if(!e) return;
+  if(el.id === "ed-nome"){ e.nome = el.value; return; }
+  const i = +el.dataset.i, b = e.blocos[i]; if(!b) return;
+  if(el.dataset.campo === "min"){ const m = parseFloat(String(el.value).replace(",", ".")); if(m > 0) b.seg = Math.round(m * 60); }
+  if(el.dataset.campo === "alvo"){ const v = parseInt(el.value, 10); if(v >= 0) b.alvo = v; }
+  const tot = e.blocos.reduce((a,x) => a + x.seg, 0);
+  $("ed-total").textContent = "Total: " + mmss(tot);
+  $("ed-perfil").innerHTML = perfilHTML(e.blocos, -1);
+});
+editor.addEventListener("change", ev => {
+  const el = ev.target, e = S.editando; if(!e || el.dataset.campo !== "tipo") return;
+  const b = e.blocos[+el.dataset.i]; b.tipo = el.value;
+  if(b.tipo === "rpm" && !(b.alvo >= 40 && b.alvo <= 140)) b.alvo = 85;
+  if(b.tipo === "watts" && !(b.alvo >= 20)) b.alvo = 120;
+  if(b.tipo === "livre") b.alvo = 0;
+  renderEditor();
+});
+editor.addEventListener("click", async ev => {
+  const e = S.editando; if(!e) return;
+  const t = ev.target.closest("button"); if(!t) return;
+  if(t.id === "ed-add"){ const ult = e.blocos[e.blocos.length - 1]; e.blocos.push(ult ? Object.assign({}, ult) : {seg:300,tipo:"livre",alvo:0}); renderEditor(); return; }
+  if(t.dataset.mover){ const i = +t.dataset.i, j = i + (+t.dataset.mover); [e.blocos[i], e.blocos[j]] = [e.blocos[j], e.blocos[i]]; renderEditor(); return; }
+  if(t.dataset.remover != null){ e.blocos.splice(+t.dataset.remover, 1); renderEditor(); return; }
+  if(t.id === "ed-cancelar"){ S.editando = null; renderEditor(); renderTreinos(); return; }
+  if(t.id === "ed-salvar"){
+    const msg = $("ed-msg");
+    const nome = (e.nome || "").trim();
+    if(!nome){ msg.hidden = false; msg.textContent = "Dê um nome ao treino."; $("ed-nome").focus(); return; }
+    if(e.blocos.some(b => b.tipo !== "livre" && !(b.alvo > 0))){ msg.hidden = false; msg.textContent = "Preencha o alvo dos blocos com meta."; return; }
+    t.disabled = true; t.textContent = "Salvando…";
+    try{
+      await gravarTreino({id:e.id, nome, blocos:e.blocos.map(b => ({seg:b.seg, tipo:b.tipo, alvo:b.tipo === "livre" ? 0 : b.alvo})), ordem:e.ordem});
+      S.editando = null; renderEditor(); renderTreinos();
+    }catch(err){ t.disabled = false; t.textContent = "Salvar treino"; msg.hidden = false; msg.textContent = "Não consegui salvar no espaço compartilhado. Confira a internet e tente de novo."; }
+  }
+});
+
+$("f-quem").addEventListener("click", ev => { const b = ev.target.closest("button"); if(!b) return; S.quem = b.dataset.q; renderEvolucao(); });
+$("f-periodo").addEventListener("click", ev => { const b = ev.target.closest("button"); if(!b) return; S.periodo = +b.dataset.p; LS.set("pd.periodo", S.periodo); renderEvolucao(); });
+$("e-lista").addEventListener("click", async ev => {
+  const ab = ev.target.closest("[data-abrir]");
+  if(ab){ S.aberto = S.aberto === ab.dataset.abrir ? null : ab.dataset.abrir; S.confirmar = null; renderEvolucao(); return; }
+  const ap = ev.target.closest("[data-apagar]");
+  if(ap){
+    const k = "p:" + ap.dataset.apagar;
+    if(S.confirmar !== k){ S.confirmar = k; renderEvolucao(); setTimeout(() => { if(S.confirmar === k){ S.confirmar = null; renderEvolucao(); } }, 4000); return; }
+    S.confirmar = null; S.aberto = null; await apagarPedalada(ap.dataset.apagar);
+  }
+});
+
+setInterval(() => { if(R.estado !== "rodando") atualizarPainel(); }, 1000);
+$("btn-ajustes").addEventListener("click", abrirAjustes);
+$("aj-fechar").addEventListener("click", () => { $("ajustes").hidden = true; });
+$("aj-perfis").addEventListener("click", ev => { const b = ev.target.closest("[data-eu]"); if(!b) return; S.eu = b.dataset.eu; LS.set("pd.eu", S.eu); renderAjustes(); renderEu(); });
+$("aj-salvar").addEventListener("click", async () => {
+  const v = $("aj-api").value.trim(), msg = $("aj-msg");
+  if(v && !/^https:\/\/script\.google(usercontent)?\.com\//.test(v)){ msg.hidden = false; msg.textContent = "Esse não parece o endereço do Apps Script. Ele começa com https://script.google.com/macros/s/ e termina em /exec."; return; }
+  if(!S.eu){ msg.hidden = false; msg.textContent = "Escolha quem usa este celular."; return; }
+  const nome = $("aj-nome").value.trim().slice(0, 24);
+  const num = id => Math.round(parseFloat(String($(id).value).replace(",", ".")));
+  const nova = {id:S.eu, treinoMin:num("aj-tm"), treinoKcal:num("aj-tk"), semanaMin:num("aj-sm"), semanaKcal:num("aj-sk")};
+  if(AJ.metas && !(nova.treinoMin > 0 && nova.treinoKcal > 0 && nova.semanaMin > 0 && nova.semanaKcal > 0)){ msg.hidden = false; msg.textContent = "Preencha as quatro metas com números maiores que zero."; return; }
+  if(AJ.nome && !nome){ msg.hidden = false; msg.textContent = "Escreva seu nome."; return; }
+  const mudouNome = AJ.nome, mudouMetas = AJ.metas;
+  msg.hidden = true; LS.set("pd.api", v);
+  await sincronizar();
+  if(v && $("sync").classList.contains("alerta")){ msg.hidden = false; msg.textContent = "Não consegui ler a planilha. Confira se a implantação está como \"Qualquer pessoa\" e se o endereço termina em /exec."; return; }
+  if(mudouNome){ const p = S.perfis.find(x => String(x.id) === String(S.eu)); if(p){ p.nome = nome; await enviar("salvarPerfil", {id:p.id, nome}); } }
+  if(mudouMetas){ S.metas[String(S.eu)] = nova; await enviar("salvarMeta", nova); }
+  salvarCache(); renderTudo();
+  $("ajustes").hidden = true;
+});
+document.querySelectorAll(".abas button").forEach(b => b.addEventListener("click", () => { if(b.dataset.v === "evolucao" || b.dataset.v === "treinos") sincronizar(); }));
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && R.estado === "parado") sincronizar(); });
+$("aj-nome").addEventListener("input", () => { AJ.nome = true; });
+["aj-tm","aj-tk","aj-sm","aj-sk"].forEach(id => $(id).addEventListener("input", () => { AJ.metas = true; }));
+$("aj-copiar").addEventListener("click", async () => {
+  const el = $("aj-link"), b = $("aj-copiar");
+  try{ await navigator.clipboard.writeText(el.value); b.textContent = "Copiado"; }
+  catch(e){ el.focus(); el.select(); b.textContent = "Selecionado"; }
+  setTimeout(() => { b.textContent = "Copiar"; }, 2500);
+});
+renderTudo();
+if(!S.eu || !apiUrl()) abrirAjustes();
+sincronizar();
+})();
+</script>
+</body>
+</html>
