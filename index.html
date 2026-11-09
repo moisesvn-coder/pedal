@@ -513,7 +513,8 @@ async function apagarTreino(id){
 }
 
 /* ---------- Bluetooth ---------- */
-const UUID = {ftms:0x1826, bike:0x2ad2, cps:0x1818, cpm:0x2a63, csc:0x1816, cscm:0x2a5b, hr:0x180d, hrm:0x2a37};
+const U16 = n => "0000" + n.toString(16).padStart(4, "0") + "-0000-1000-8000-00805f9b34fb";
+const UUID = {ftms:U16(0x1826), bike:U16(0x2ad2), cps:U16(0x1818), cpm:U16(0x2a63), csc:U16(0x1816), cscm:U16(0x2a5b), hr:U16(0x180d), hrm:U16(0x2a37)};
 const live = {pot:null, cad:null, vel:null, fc:null, t:0};
 const BT = {dev:null, fonte:null, demo:null, crank:null, crankT:0, tentandoReconectar:false};
 
@@ -526,6 +527,13 @@ function btEstado(estado, titulo, sub){
 }
 function btMsg(txt){ const m = $("bt-msg"); m.hidden = !txt; m.textContent = txt || ""; }
 
+function erroTxt(e){ if(e == null) return "sem detalhe"; if(typeof e === "object") return String(e.name && e.message ? e.name + ": " + e.message : e.message || e.name || e); return String(e); }
+function foiCancelado(e){ return !!e && (e.name === "NotFoundError" || /cancel/i.test(String(e.message || e))); }
+function pedirAparelho(todos){
+  const extras = [UUID.ftms, UUID.cps, UUID.csc, UUID.hr];
+  return navigator.bluetooth.requestDevice(todos ? {acceptAllDevices:true, optionalServices:extras}
+    : {filters:[{services:[UUID.ftms]},{services:[UUID.cps]},{services:[UUID.csc]}], optionalServices:[UUID.hr]});
+}
 async function conectar(todos){
   btMsg("");
   if(!navigator.bluetooth){
@@ -533,15 +541,18 @@ async function conectar(todos){
     return;
   }
   pararDemo();
-  const extras = [UUID.ftms, UUID.cps, UUID.csc, UUID.hr];
-  const opts = todos ? {acceptAllDevices:true, optionalServices:extras}
-                     : {filters:[{services:[UUID.ftms]},{services:[UUID.cps]},{services:[UUID.csc]}], optionalServices:[UUID.hr]};
-  let dev;
-  try{ dev = await navigator.bluetooth.requestDevice(opts); }
+  let dev = null, erro = null;
+  try{ dev = await pedirAparelho(todos); }
   catch(e){
-    if(e && e.name === "NotFoundError") return; // pessoa fechou a lista
     if(e && e.name === "SecurityError"){ btMsg("O Bluetooth foi bloqueado nesta tela. Abra o link do app direto no Bluefy, fora de outros apps."); return; }
-    btMsg("Não consegui abrir a busca de aparelhos: " + (e && e.message || e)); return;
+    erro = e;
+    /* Se a busca filtrada falhar (o Bluefy às vezes recusa filtros), tenta de novo mostrando todos os aparelhos. */
+    if(!todos && !foiCancelado(e)){ try{ dev = await pedirAparelho(true); erro = null; }catch(e2){ erro = e2; } }
+  }
+  if(!dev){
+    if(foiCancelado(erro)) return;
+    btMsg(`Não consegui escolher a bike (resposta do navegador: ${erroTxt(erro)}). Confira se o Bluetooth do iPhone está ligado e se o Bluefy tem permissão de Bluetooth nos Ajustes do iPhone. Pedale um pouco para a bike acordar e tente de novo.`);
+    return;
   }
   BT.dev = dev;
   dev.addEventListener("gattserverdisconnected", aoDesconectar);
