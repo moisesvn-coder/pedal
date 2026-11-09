@@ -1115,8 +1115,8 @@ function storyBlocos(){
       `<button class="st-toque" data-ir="3">Toque para continuar ${SETA}</button>`];
   }
   if(INTRO.i === 3){
-    const ultima = INTRO.q === INTRO.perguntas.length - 1;
-    return [`<span class="st-pill giro-e">${ultima ? "Última pergunta" : `Pergunta ${INTRO.q + 1} de ${INTRO.perguntas.length}`}</span>`,
+    const ultima = INTRO.perguntas[INTRO.q].indexOf("música") >= 0;
+    return [`<span class="st-pill giro-e">Antes de subir na bike</span>`,
       `<h2 class="st-h1 st-q">${esc(INTRO.perguntas[INTRO.q])}</h2>`,
       INTRO.espera ? `<p class="st-p">${ultima ? "Solta o som. Eu espero." : "Vai lá resolver. Eu espero."}</p>` : "",
       `<div class="st-esp"></div>`,
@@ -1140,8 +1140,8 @@ function abrirIntro(){
   if(R.estado !== "parado") return;
   const ult = LS.get("pd.ultimoTreino", null);
   INTRO.treinoId = S.treinos.some(t => t.id === ult) ? ult : (ult === "" || !S.treinos.length ? "" : S.treinos[0].id);
-  const sorteio = PERGUNTAS_PAIS.slice().sort(() => Math.random() - .5).slice(0, 2);
-  INTRO.perguntas = ["As crianças estão seguras?"].concat(sorteio, ["A música está ligada?"]);
+  const anterior = LS.get("pd.ultimaPergunta", ""), opcoes = ["As crianças estão seguras?"].concat(PERGUNTAS_PAIS, ["A música está ligada?"]).filter(q => q !== anterior);
+  INTRO.perguntas = [opcoes[Math.floor(Math.random() * opcoes.length)]]; LS.set("pd.ultimaPergunta", INTRO.perguntas[0]);
   Object.assign(INTRO, {aberta:true, vista:true, i:0, q:0, espera:false, aviso:""});
   $("intro").hidden = false; document.body.style.overflow = "hidden";
   renderStory(true);
