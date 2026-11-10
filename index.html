@@ -1115,8 +1115,8 @@ function dursDe(u){ const m = (GOSTOS[String(u)] || {min:[20, 35, 50]}).min; ret
 const INTS = [
   {id:"leve", nome:"Leve", fator:.5, vel:.8, tema:"verde", cor:"#0B6E6A", guia:"#FFFFFF", eu:"#FFD23F", festa:["#FFFFFF","#FFD23F","#FF7A59","#B5A6FF"], fala:"dá para conversar", formato:"ritmo constante"},
   {id:"moderado", nome:"Moderado", fator:1, vel:1, tema:"roxo", cor:"#5B3FD9", guia:"#FFFFFF", eu:"#FFD23F", festa:["#FFFFFF","#FFD23F","#FF7A59","#7FE0D8"], fala:"só frases curtas", formato:"degraus suaves"},
-  {id:"forte", nome:"Forte", fator:1.5, vel:1.1, tema:"amarelo", cor:"#8F5F0A", guia:"#1A1423", eu:"#5B3FD9", festa:["#1A1423","#5B3FD9","#FF7A59","#FFFFFF"], fala:"frases bem curtas", formato:"ritmo com subidas fortes"},
-  {id:"pesado", nome:"Pesado", fator:2, vel:1.2, tema:"coral", cor:"#D9481F", guia:"#1A1423", eu:"#FFFFFF", festa:["#FFFFFF","#FFD23F","#1A1423","#5B3FD9"], fala:"mal dá para falar", formato:"tiros de 2 min"}
+  {id:"forte", nome:"Forte", fator:1.5, vel:1.1, tema:"amarelo", cor:"#8F5F0A", guia:"#5B3FD9", eu:"#1A1423", festa:["#1A1423","#5B3FD9","#FF7A59","#FFFFFF"], fala:"frases bem curtas", formato:"ritmo com subidas fortes"},
+  {id:"pesado", nome:"Pesado", fator:2, vel:1.2, tema:"coral", cor:"#D9481F", guia:"#FFFFFF", eu:"#1A1423", festa:["#FFFFFF","#FFD23F","#1A1423","#5B3FD9"], fala:"mal dá para falar", formato:"tiros de 2 min"}
 ];
 const cfg = (k, d) => { const v = LS.get(k + "." + S.eu, null); return v != null ? v : LS.get(k, d); };
 const cfgSet = (k, v) => LS.set(k + "." + S.eu, v);
@@ -1219,81 +1219,51 @@ function pdTela(cv){
   const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H); g.lineCap = "round"; g.lineJoin = "round";
   return {g, W, H};
 }
-/* Textura: números pseudoaleatórios estáveis, para o grão não piscar de um quadro para o outro. */
 const rnd = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
 const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
-function pdGrao(){
-  if(PD.grao != null) return PD.grao;
-  try{
-    const c = document.createElement("canvas"); c.width = c.height = 120; const g = c.getContext("2d");
-    for(let k = 0; k < 2800; k++){ const lado = rnd(k * 3.1) < .86 ? 1 : 2;
-      g.fillStyle = k % 2 ? `rgba(255,255,255,${(.03 + rnd(k) * .09).toFixed(3)})` : `rgba(26,20,35,${(.03 + rnd(k + .5) * .1).toFixed(3)})`;
-      g.fillRect(Math.floor(rnd(k * 1.7) * 120), Math.floor(rnd(k * 2.3) * 120), lado, lado); }
-    PD.grao = c.toDataURL("image/png");
-  }catch(e){ PD.grao = ""; }
-  return PD.grao;
-}
-/* Terreno da tela atual: o caminho da guia vira um horizonte poroso. Desenhado uma vez por tela e reaproveitado. */
-function pdFundo(W, H, dpr, t0, JAN, yMax, Y){
-  const chave = [t0, W, H, Math.round(yMax), PD.i.id, dpr].join("|");
-  if(PD.fundo && PD.fundo.chave === chave) return PD.fundo.cv;
-  const cv = (PD.fundo && PD.fundo.cv) || document.createElement("canvas"); cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
-  const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
-  const cor = PD.i.guia, festa = PD.i.festa, crista = x => Y(alvoEm(Math.max(0, t0 + (x - 14) / (W - 28) * JAN)));
-  let topo = H; for(let x = 0; x <= W; x += 3) topo = Math.min(topo, crista(x));
-  const grad = g.createLinearGradient(0, topo, 0, H); grad.addColorStop(0, rgba(cor, .3)); grad.addColorStop(.55, rgba(cor, .12)); grad.addColorStop(1, rgba(cor, .02));
-  g.fillStyle = grad; g.beginPath(); g.moveTo(0, H); for(let x = 0; x <= W; x += 3) g.lineTo(x, crista(x)); g.lineTo(W, crista(W)); g.lineTo(W, H); g.closePath(); g.fill();
-  for(let x = 0; x <= W; x += 1.5){ const yc = crista(x), base = x * 13.7 + t0 * .91;
-    for(let k = 0; k < 7; k++){ const u = rnd(base + k * 5.3), fundo = u * u * (H - yc) * .9 - 5, lado = .8 + rnd(base + k * 2.9) * 1.7;
-      g.fillStyle = rnd(base + k * 8.1) < .07 ? festa[Math.floor(rnd(base + k) * festa.length)] : cor;
-      g.globalAlpha = Math.max(.05, .8 - fundo / Math.max(30, H - yc) * .75) * (.4 + rnd(base + k * 1.3) * .6);
-      g.fillRect(x + (rnd(base + k * 4.4) - .5) * 3, yc + fundo, lado, lado); } }
-  g.globalAlpha = 1;
-  PD.fundo = {chave, cv};
-  return cv;
-}
-/* Janela de 30 s: as duas bolinhas varrem a tela da esquerda para a direita e deixam rastros de poeira que somem. */
+/* Janela de 30 s: as duas bolinhas varrem a tela da esquerda para a direita e deixam rastros que somem. */
 function pdFrame(agora){
   if(!PD.ativo || INTRO.modo !== "pedal") return;
   PD.raf = requestAnimationFrame(pdFrame);
   const cv = $("pd-cv"); if(!cv || $("pd-vg").hidden || !cv.clientWidth) return;
-  const {g, W, H} = pdTela(cv), JAN = 30, RASTRO = 14, cor = PD.i.guia, tinta = PD.i.eu, dpr = Math.min(2, window.devicePixelRatio || 1);
+  const {g, W, H} = pdTela(cv), JAN = 30, RASTRO = 14, cor = PD.i.guia, tinta = PD.i.eu;
   const t = R.seg + (R.estado === "rodando" ? Math.min(1, (agora - PD.tickAt) / 1000) : 0), t0 = Math.floor(t / JAN) * JAN, yMax = pdEscala();
-  const X = s => (s - t0) / JAN * (W - 28) + 14, Y = v => H - 16 - Math.min(1, v / yMax) * (H - 40);
+  const X = s => (s - t0) / JAN * (W - 28) + 14, Y = v => H - 16 - Math.min(1, v / yMax) * (H - 34);
   PD.suave += (PD.val - PD.suave) * .12;
   const meu = s => { if(s >= R.seg) return PD.suave; const a = Math.floor(s), va = PD.hist[a] || 0, vb = PD.hist[a + 1] != null ? PD.hist[a + 1] : va; return va + (vb - va) * (s - a); };
-  g.drawImage(pdFundo(W, H, dpr, t0, JAN, yMax, Y), 0, 0, W, H);
-  /* poeira no ar */
-  for(let k = 0; k < 22; k++){ const px = (rnd(k * 7.3) * W + agora * (.004 + rnd(k) * .009)) % W, py = H * (.06 + rnd(k * 3.9) * .8) + Math.sin(agora / (900 + 600 * rnd(k * 5.1)) + k) * 6;
-    g.globalAlpha = .1 + .28 * (.5 + .5 * Math.sin(agora / (500 + 400 * rnd(k * 2.2)) + k * 1.7)); g.fillStyle = k % 4 === 0 ? tinta : cor; g.beginPath(); g.arc(px, py, .8 + rnd(k * 9.1) * 1.5, 0, 6.283); g.fill(); }
+  g.globalAlpha = .28; g.strokeStyle = cor; g.lineWidth = 1.5; g.beginPath(); g.moveTo(8, H - 10); g.lineTo(W - 8, H - 10); g.stroke();
   /* caminho que a guia ainda vai fazer nesta tela */
-  g.strokeStyle = cor; g.globalAlpha = .55; g.lineWidth = 3; g.setLineDash([1, 8]); g.beginPath();
+  g.strokeStyle = cor; g.globalAlpha = .45; g.lineWidth = 4; g.setLineDash([1, 9]); g.beginPath();
   for(let s = t; s <= t0 + JAN; s += .5){ const x = X(s), y = Y(alvoEm(s)); if(s === t) g.moveTo(x, y); else g.lineTo(x, y); }
   g.stroke(); g.setLineDash([]);
-  /* rastros: um fio fino e uma nuvem de poeira que se espalha e some */
-  const fio = (f, c, larg) => { g.strokeStyle = c; g.lineWidth = larg;
-    for(let s = Math.max(t0, t - RASTRO); s < t; s += .25){ const e = Math.min(t, s + .25); g.globalAlpha = Math.pow(1 - (t - s) / RASTRO, 1.3) * .5; g.beginPath(); g.moveTo(X(s), Y(f(s))); g.lineTo(X(e), Y(f(e))); g.stroke(); } };
-  const poeira = (f, c, esp, raio, semente) => { g.fillStyle = c;
-    for(let s = Math.max(t0, Math.ceil((t - RASTRO) * 10) / 10); s < t; s += .1){ const k = Math.round(s * 10) + semente, novo = 1 - (t - s) / RASTRO, abre = esp * (1.9 - novo * 1.3);
-      g.globalAlpha = Math.pow(novo, 1.4) * (.35 + rnd(k + .13) * .65);
-      g.beginPath(); g.arc(X(s) + (rnd(k) - .5) * abre, Y(f(s)) + (rnd(k + .37) - .5) * abre * 1.5, raio * (.35 + rnd(k + .71) * .9) * (.55 + novo * .6), 0, 6.283); g.fill(); } };
-  fio(alvoEm, cor, 3); poeira(alvoEm, cor, 9, 3.2, 0); fio(meu, tinta, 2.5); if(PD.dados) poeira(meu, tinta, 7, 2.6, 5000);
+  /* rastros que somem com o tempo */
+  const rastro = (f, c, larg) => { g.strokeStyle = c; g.lineWidth = larg;
+    for(let s = Math.max(t0, t - RASTRO); s < t; s += .25){ const e = Math.min(t, s + .25); g.globalAlpha = Math.pow(1 - (t - s) / RASTRO, 1.3) * .9; g.beginPath(); g.moveTo(X(s), Y(f(s))); g.lineTo(X(e), Y(f(e))); g.stroke(); } };
+  /* a guia é uma estrela: o raio dela brilha e cintila; a linha de quem pedala fica simples */
+  const cintila = (x, y, r, rot, alfa) => { g.globalAlpha = alfa; g.beginPath(); for(let q = 0; q < 8; q++){ const rr = q % 2 ? r * .2 : r, an = rot + q * Math.PI / 4; g.lineTo(x + Math.cos(an) * rr, y + Math.sin(an) * rr); } g.closePath(); g.fill(); };
+  const ini = Math.max(t0, t - RASTRO);
+  if(t - ini > .05){
+    const traco = (larg, a0) => { const gr = g.createLinearGradient(X(ini), 0, X(t), 0); gr.addColorStop(0, rgba(cor, 0)); gr.addColorStop(1, rgba(cor, a0));
+      g.globalAlpha = 1; g.strokeStyle = gr; g.lineWidth = larg; g.beginPath(); g.moveTo(X(ini), Y(alvoEm(ini))); for(let s = ini + .25; s < t; s += .25) g.lineTo(X(s), Y(alvoEm(s))); g.lineTo(X(t), Y(alvoEm(t))); g.stroke(); };
+    traco(18, .2); traco(9, .35); traco(3.5, 1);
+    g.fillStyle = cor;
+    for(let k = Math.ceil(ini * 3); k < t * 3; k++){ if(rnd(k) < .45) continue; const s = k / 3, novo = 1 - (t - s) / RASTRO, pisca = .5 + .5 * Math.sin(agora / 170 + k * 2.4);
+      cintila(X(s) + (rnd(k + .3) - .5) * 10, Y(alvoEm(s)) + (rnd(k + .7) - .5) * 18, (2 + rnd(k + .9) * 4) * (.4 + pisca * .6), k, novo * (.25 + pisca * .75)); }
+  }
+  rastro(meu, tinta, 4.5);
   const xa = X(t), yg = Y(alvoEm(t)), ym = Y(PD.suave), noPonto = PD.dados && Math.abs(PD.suave / Math.max(1, alvoEm(t)) - 1) <= .08;
   g.globalAlpha = .6; g.strokeStyle = cor; g.lineWidth = 1.5; g.setLineDash([3, 4]); g.beginPath(); g.moveTo(xa, yg); g.lineTo(xa, ym); g.stroke(); g.setLineDash([]);
-  /* a guia: um brilho que pulsa, com grãos girando em volta */
-  const raioBrilho = 52 + 6 * Math.sin(agora / 420), brilho = g.createRadialGradient(xa, yg, 0, xa, yg, raioBrilho);
-  brilho.addColorStop(0, rgba(cor, .46)); brilho.addColorStop(.35, rgba(cor, .17)); brilho.addColorStop(1, rgba(cor, 0));
-  g.globalAlpha = 1; g.fillStyle = brilho; g.fillRect(xa - raioBrilho, yg - raioBrilho, raioBrilho * 2, raioBrilho * 2);
+  const pulso = Math.sin(agora / 300), tremor = Math.sin(agora / 97), raioHalo = 44 + 7 * pulso, halo = g.createRadialGradient(xa, yg, 0, xa, yg, raioHalo);
+  halo.addColorStop(0, rgba(cor, .55)); halo.addColorStop(.3, rgba(cor, .22)); halo.addColorStop(1, rgba(cor, 0));
+  g.globalAlpha = 1; g.fillStyle = halo; g.fillRect(xa - raioHalo, yg - raioHalo, raioHalo * 2, raioHalo * 2);
   g.fillStyle = cor;
-  for(let k = 0; k < 16; k++){ const ang = k / 16 * 6.283 + agora / 1900 * (k % 2 ? 1 : -1.3), d = 15 + 6 * rnd(k * 3.3) + 2 * Math.sin(agora / 600 + k);
-    g.globalAlpha = .35 + .45 * rnd(k * 6.1); g.beginPath(); g.arc(xa + Math.cos(ang) * d, yg + Math.sin(ang) * d, .8 + rnd(k * 2.7) * 1.3, 0, 6.283); g.fill(); }
-  g.globalAlpha = 1; g.beginPath(); g.arc(xa, yg, 10.5, 0, 6.283); g.fill();
+  cintila(xa, yg, 27 + 5 * pulso + 3 * tremor, Math.PI / 2, .95);
+  cintila(xa, yg, 15 + 3 * Math.sin(agora / 210 + 1), Math.PI / 4 + agora / 2600, .7);
+  for(let k = 0; k < 7; k++){ const ang = k / 7 * 6.283 + agora / 2300, d = 20 + 9 * rnd(k * 3.3), pisca = .5 + .5 * Math.sin(agora / 150 + k * 1.9); cintila(xa + Math.cos(ang) * d, yg + Math.sin(ang) * d, 1.5 + 3 * pisca, k, .25 + .7 * pisca); }
+  const miolo = g.createRadialGradient(xa, yg, 0, xa, yg, 9.5); miolo.addColorStop(0, "#FFFFFF"); miolo.addColorStop(.45, "#FFFFFF"); miolo.addColorStop(1, cor);
+  g.globalAlpha = 1; g.fillStyle = miolo; g.beginPath(); g.arc(xa, yg, 9.5, 0, 6.283); g.fill();
   if(PD.dados){
-    if(noPonto){
-      g.globalAlpha = .4; g.fillStyle = tinta; g.beginPath(); g.arc(xa, ym, 13.5 + 1.5 * Math.sin(agora / 260), 0, 6.283); g.fill();
-      for(let k = 0; k < 9; k++){ const ang = k / 9 * 6.283 - agora / 900, d = 17 + 4 * Math.sin(agora / 300 + k * 1.9); g.globalAlpha = .75; g.beginPath(); g.arc(xa + Math.cos(ang) * d, ym + Math.sin(ang) * d, 1.3, 0, 6.283); g.fill(); }
-      g.globalAlpha = 1;
-    }
+    if(noPonto){ g.globalAlpha = .45; g.fillStyle = tinta; g.beginPath(); g.arc(xa, ym, 13.5, 0, 6.283); g.fill(); g.globalAlpha = 1; }
     g.fillStyle = tinta; g.beginPath(); g.arc(xa, ym, 7.5, 0, 6.283); g.fill(); g.strokeStyle = "#1A1423"; g.lineWidth = 2; g.stroke();
   }
   /* fogos pequenos ao cumprir uma etapa */
@@ -1445,7 +1415,6 @@ function renderStory(anim){
   const el = $("intro"), pedal = INTRO.modo === "pedal", fim = INTRO.modo === "fim";
   el.dataset.tema = pedal ? PD.i.tema : fim ? "noite" : TEMAS[INTRO.i];
   $("st-seg").hidden = !!INTRO.modo; $("st-x").hidden = pedal; el.classList.toggle("pedalando", pedal);
-  el.style.backgroundImage = pedal && pdGrao() ? `url(${pdGrao()})` : "";
   $("st-seg").innerHTML = TEMAS.map((_, k) => `<i class="${k <= INTRO.i ? "on" : ""}"></i>`).join("");
   const corpo = $("st-body"); corpo.classList.toggle("sem-anim", !anim);
   corpo.innerHTML = (pedal ? pedalBlocos() : fim ? fimBlocos() : storyBlocos()).filter(Boolean).map((h, k) => `<div class="st-item${h.indexOf('class="st-esp"') >= 0 ? " st-cresce" : ""}" style="--i:${k}">${h}</div>`).join("");
