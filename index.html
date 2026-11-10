@@ -1105,7 +1105,9 @@ function renderTudo(){ atualizarOrdem(); renderEu(); renderEscolha(); renderTrei
 /* ---------- carga da semana e treinos (curto, médio, longo × leve, moderado, pesado) ---------- */
 /* OMS, adultos de 18 a 64 anos: pelo menos 150 min/semana de esforço moderado; minuto vigoroso conta em dobro. */
 const CARGA_SEMANA = 150, TREINOS_SEMANA = 3;
-const DURS = [{id:"curto", nome:"Curto", min:20}, {id:"medio", nome:"Médio", min:35}, {id:"longo", nome:"Longo", min:50}];
+/* Durações e gosto por perfil: p1 prefere treinos curtos e intensos; p2, mais longos. */
+const GOSTOS = {p1:{min:[13, 20, 30], gosto:"curto"}, p2:{min:[20, 30, 40], gosto:"longo"}};
+function dursDe(u){ const m = (GOSTOS[String(u)] || {min:[20, 35, 50]}).min; return [{id:"curto", nome:"Curto", min:m[0]}, {id:"medio", nome:"Médio", min:m[1]}, {id:"longo", nome:"Longo", min:m[2]}]; }
 const INTS = [
   {id:"leve", nome:"Leve", fator:.5, vel:.8, tema:"verde", cor:"#0B6E6A", guia:"#FFFFFF", eu:"#FFD23F", festa:["#FFFFFF","#FFD23F","#FF7A59","#B5A6FF"], fala:"dá para conversar", formato:"ritmo constante"},
   {id:"moderado", nome:"Moderado", fator:1, vel:1, tema:"roxo", cor:"#5B3FD9", guia:"#FFFFFF", eu:"#FFD23F", festa:["#FFFFFF","#FFD23F","#FF7A59","#7FE0D8"], fala:"só frases curtas", formato:"degraus suaves"},
@@ -1114,16 +1116,17 @@ const INTS = [
 const pesoKg = () => { const v = +LS.get("pd.peso", 0); return v >= 30 && v <= 250 ? v : 70; };
 const velModerada = () => { const v = +LS.get("pd.vmod", 0); return v >= 5 && v <= 80 ? v : 25; };
 const potModerada = () => { const v = +LS.get("pd.pref", 0); return v >= 20 && v <= 600 ? v : Math.round(1.4 * pesoKg() / 5) * 5; };
-const durDe = id => DURS.find(d => d.id === id) || DURS[1];
+const durDe = id => { const D = dursDe(S.eu); return D.find(d => d.id === id) || D[1]; };
 const intDe = id => INTS.find(i => i.id === id) || INTS[1];
 const fmtPts = v => String(Math.round(v * 10) / 10).replace(".", ",");
 function cargaDe(p){ const x = p.serie && p.serie.x; return x && x.pts != null ? +x.pts : (p.dur || 0) / 60; }
 function cargaSemana(u){ const ini = inicioSemana(Date.now()).getTime(); return S.pedaladas.filter(p => String(p.uid) === String(u) && p.ts >= ini).reduce((a,p) => a + cargaDe(p), 0); }
 function treinosNaSemana(u){ const ini = inicioSemana(Date.now()).getTime(); return S.pedaladas.filter(p => String(p.uid) === String(u) && p.ts >= ini).length; }
 function sugestao(precisa){
-  let m = null;
-  DURS.forEach(d => INTS.forEach(i => { const p = d.min * i.fator; if(p >= precisa - .01 && (!m || p < m.p || (p === m.p && i.fator < m.i.fator))) m = {d, i, p}; }));
-  return m || {d:DURS[2], i:INTS[2], p:DURS[2].min * INTS[2].fator};
+  const D = dursDe(S.eu), curto = (GOSTOS[String(S.eu)] || {}).gosto === "curto", serve = (d, i) => d.min * i.fator >= precisa - .01;
+  if(curto){ for(const d of D) for(const i of INTS) if(serve(d, i)) return {d, i, p:d.min * i.fator}; }   /* o mais curto que fecha a conta */
+  else { for(const i of INTS) for(const d of D) if(serve(d, i)) return {d, i, p:d.min * i.fator}; }       /* o mais leve que fecha a conta */
+  return {d:D[2], i:INTS[2], p:D[2].min * INTS[2].fator};
 }
 
 /* ---------- treino em tela cheia: tempo, energia e a meta ao longo do tempo ---------- */
@@ -1359,7 +1362,7 @@ function storyBlocos(){
     const pede = falta <= 0 ? "Semana fechada. Hoje é bônus: escolha no gosto." : `Para fechar em ${restam} ${restam === 1 ? "treino" : "treinos"}, hoje pede ${fmtPts(Math.ceil(precisa))} pontos.`;
     const efeito = falta <= 0 ? `Vale ${fmtPts(pts)} pontos de bônus.` : c + pts >= CARGA_SEMANA ? "Com ele, você fecha a carga da semana." : pts + .01 < precisa ? `Vale ${fmtPts(pts)} pontos: ficam ${fmtPts(falta - pts)} para os próximos.` : `Com ele, a semana vai a ${fmtPts(c + pts)} de ${CARGA_SEMANA} pontos.`;
     return [`<h2 class="st-h1">Treino de hoje</h2>`, `<p class="st-p">${pede}</p>`,
-      `<div class="st-opc">${DURS.map(o => `<button data-dur="${o.id}" aria-pressed="${o.id === d.id}">${o.nome}<small>${o.min} min</small></button>`).join("")}</div>`,
+      `<div class="st-opc">${dursDe(S.eu).map(o => `<button data-dur="${o.id}" aria-pressed="${o.id === d.id}">${o.nome}<small>${o.min} min</small></button>`).join("")}</div>`,
       `<div class="st-opc">${INTS.map(o => `<button data-int="${o.id}" aria-pressed="${o.id === i.id}">${o.nome}<small>${o.fala}</small></button>`).join("")}</div>`,
       `<div class="fig giro-e"><div class="fig-num">${d.nome} · ${i.nome}</div><div class="fig-sub">${d.min} min · ${i.formato} · vale ${fmtPts(pts)} pontos</div></div>`,
       `<p class="st-p">${efeito}</p>`, blocoBike(), `<div class="st-esp"></div>`,
