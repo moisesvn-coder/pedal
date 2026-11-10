@@ -280,6 +280,8 @@ input[type=number]{font-variant-numeric:tabular-nums}
 .pd-topo .st-opc button{font-size:.84rem;border-radius:14px}
 .pd-guia{font-size:clamp(1.5rem,7.6vw,2.1rem);font-weight:800;line-height:1.05;letter-spacing:-.02em;min-height:2.15em;display:flex;align-items:flex-end;text-wrap:balance}
 .pd-fig{padding:12px 14px;gap:8px}
+.pd-solto{display:flex;flex-direction:column;gap:8px}
+.pd-solto .fig-top,.pd-solto .pd-trio span{color:var(--st-fg)}
 .pd-fig .fig-top b{font-variant-numeric:tabular-nums;color:#1A1423}
 .pd-cv{width:100%;height:clamp(150px,29vh,230px);display:block}
 .pd-ov{width:100%;height:54px;display:block}
@@ -1105,9 +1107,9 @@ function renderTudo(){ atualizarOrdem(); renderEu(); renderEscolha(); renderTrei
 const CARGA_SEMANA = 150, TREINOS_SEMANA = 3;
 const DURS = [{id:"curto", nome:"Curto", min:20}, {id:"medio", nome:"Médio", min:35}, {id:"longo", nome:"Longo", min:50}];
 const INTS = [
-  {id:"leve", nome:"Leve", fator:.5, vel:.8, tema:"verde", cor:"#0B6E6A", fala:"dá para conversar", formato:"ritmo constante"},
-  {id:"moderado", nome:"Moderado", fator:1, vel:1, tema:"roxo", cor:"#5B3FD9", fala:"só frases curtas", formato:"degraus suaves"},
-  {id:"pesado", nome:"Pesado", fator:2, vel:1.2, tema:"coral", cor:"#D9481F", fala:"mal dá para falar", formato:"tiros de 2 min"}
+  {id:"leve", nome:"Leve", fator:.5, vel:.8, tema:"verde", cor:"#0B6E6A", guia:"#FFFFFF", eu:"#FFD23F", festa:["#FFFFFF","#FFD23F","#FF7A59","#B5A6FF"], fala:"dá para conversar", formato:"ritmo constante"},
+  {id:"moderado", nome:"Moderado", fator:1, vel:1, tema:"roxo", cor:"#5B3FD9", guia:"#FFFFFF", eu:"#FFD23F", festa:["#FFFFFF","#FFD23F","#FF7A59","#7FE0D8"], fala:"só frases curtas", formato:"degraus suaves"},
+  {id:"pesado", nome:"Pesado", fator:2, vel:1.2, tema:"coral", cor:"#D9481F", guia:"#1A1423", eu:"#FFFFFF", festa:["#FFFFFF","#FFD23F","#1A1423","#5B3FD9"], fala:"mal dá para falar", formato:"tiros de 2 min"}
 ];
 const pesoKg = () => { const v = +LS.get("pd.peso", 0); return v >= 30 && v <= 250 ? v : 70; };
 const velModerada = () => { const v = +LS.get("pd.vmod", 0); return v >= 5 && v <= 80 ? v : 25; };
@@ -1165,7 +1167,7 @@ function iniciarPedal(){
 function pedalBlocos(){
   return [`<div class="pd-topo"><span class="st-pill giro-e">${esc(PD.rotulo)}</span><div class="st-opc dois"><button data-vista="grafico">Gráfico</button><button data-vista="numeros">Números</button></div></div>`,
     `<div class="pd-col" id="pd-vg"><div class="pd-guia" id="pd-guia">Vamos começar</div>` +
-    `<div class="fig pd-fig"><div class="fig-top"><span id="pd-etapa">Aquecimento</span><span id="pd-dica"></span></div><canvas class="pd-cv" id="pd-cv" role="img" aria-label="Siga a bolinha guia"></canvas>` +
+    `<div class="pd-solto"><div class="fig-top"><span id="pd-etapa">Aquecimento</span><span id="pd-dica"></span></div><canvas class="pd-cv" id="pd-cv" role="img" aria-label="Siga a bolinha guia"></canvas>` +
     `<div class="pd-trio"><div><span>Guia</span><b id="pd-alvo">—</b></div><div><span>Você</span><b id="pd-voce">—</b></div><div><span>Giro</span><b id="pd-c">—</b></div></div></div>` +
     `<div class="fig pd-fig"><div class="fig-top"><span>Treino inteiro</span><span><b id="pd-t">${mmss(PD.dur)}</b> <span id="pd-t-rot">restantes</span></span></div><canvas class="pd-ov" id="pd-ov" role="img" aria-label="Desempenho no treino inteiro"></canvas></div></div>` +
     `<div class="pd-nums" id="pd-vn" hidden><div class="g"><span>Potência</span><b id="pn-p">—</b><small id="pn-alvo">W</small></div><div><span>Cadência</span><b id="pn-c">—</b><small>rpm</small></div><div><span>Velocidade</span><b id="pn-v">—</b><small>km/h</small></div><div><span>Tempo</span><b id="pn-t">0:00</b><small>de ${PD.d.min} min</small></div><div><span>Distância</span><b id="pn-d">0,00</b><small>km</small></div><div><span>Energia</span><b id="pn-e">0</b><small>de ${Math.round(PD.eAlvo).toLocaleString("pt-BR")} kg·km</small></div><div><span>Calorias</span><b id="pn-k">0</b><small>kcal</small></div></div>`,
@@ -1180,10 +1182,10 @@ function pdVista(v){
 }
 function pdFogos(n){
   if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const cores = ["#FF7A59", "#FFD23F", "#5B3FD9", "#0B6E6A"];
+  const cores = PD.i.festa;
   for(let b = 0; b < n; b++){
     const ps = [];
-    for(let j = 0; j < 22; j++){ const a = Math.PI * 2 * j / 22 + Math.random() * .3, v = 55 + Math.random() * 70; ps.push({vx:Math.cos(a) * v, vy:Math.sin(a) * v, cor:cores[(j + b) % 4]}); }
+    for(let j = 0; j < 22; j++){ const a = Math.PI * 2 * j / 22 + Math.random() * .3, v = 60 + Math.random() * 85; ps.push({vx:Math.cos(a) * v, vy:Math.sin(a) * v, cor:cores[(j + b) % 4]}); }
     PD.fogos.push({t0:performance.now() + b * 230, x:.2 + Math.random() * .6, y:.22 + Math.random() * .3, ps});
   }
 }
@@ -1196,7 +1198,7 @@ function pdPasso(){
   const alvo = alvoEm(t);
   if(PD.dados && alvo > 0){ PD.somaAd += Math.min(1, PD.val / alvo); PD.nAd += 1; }
   const k = t >= PD.dur ? PD.segs.length : segEm(t);
-  if(k > PD.segK){ PD.segK = k; pdFogos(k >= PD.segs.length ? 3 : 1); if(k < PD.segs.length) bip(false); }
+  if(k > PD.segK){ PD.segK = k; pdFogos(k >= PD.segs.length ? 4 : 2); PD.festaAte = Date.now() + 2600; if(k < PD.segs.length) bip(false); }
 }
 function pdEscala(){ let m = 0; PD.segs.forEach(g => { m = Math.max(m, g.f0, g.f1); }); let h = 0; for(let j = Math.max(0, R.seg - 120); j <= R.seg; j++) h = Math.max(h, PD.hist[j] || 0); return Math.max(m * pdRef() * 1.35, h * 1.12, 1); }
 function pdTela(cv){
@@ -1210,14 +1212,14 @@ function pdFrame(agora){
   if(!PD.ativo || INTRO.modo !== "pedal") return;
   PD.raf = requestAnimationFrame(pdFrame);
   const cv = $("pd-cv"); if(!cv || $("pd-vg").hidden || !cv.clientWidth) return;
-  const {g, W, H} = pdTela(cv), JAN = 30, RASTRO = 14, cor = PD.i.cor, tinta = "#1A1423";
+  const {g, W, H} = pdTela(cv), JAN = 30, RASTRO = 14, cor = PD.i.guia, tinta = PD.i.eu;
   const t = R.seg + (R.estado === "rodando" ? Math.min(1, (agora - PD.tickAt) / 1000) : 0), t0 = Math.floor(t / JAN) * JAN, yMax = pdEscala();
   const X = s => (s - t0) / JAN * (W - 28) + 14, Y = v => H - 16 - Math.min(1, v / yMax) * (H - 34);
   PD.suave += (PD.val - PD.suave) * .12;
   const meu = s => { if(s >= R.seg) return PD.suave; const a = Math.floor(s), va = PD.hist[a] || 0, vb = PD.hist[a + 1] != null ? PD.hist[a + 1] : va; return va + (vb - va) * (s - a); };
-  g.strokeStyle = "#ECE8F4"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(8, H - 10); g.lineTo(W - 8, H - 10); g.stroke();
+  g.globalAlpha = .28; g.strokeStyle = cor; g.lineWidth = 1.5; g.beginPath(); g.moveTo(8, H - 10); g.lineTo(W - 8, H - 10); g.stroke();
   /* caminho que a guia ainda vai fazer nesta tela */
-  g.strokeStyle = cor; g.globalAlpha = .28; g.lineWidth = 4; g.setLineDash([1, 9]); g.beginPath();
+  g.strokeStyle = cor; g.globalAlpha = .45; g.lineWidth = 4; g.setLineDash([1, 9]); g.beginPath();
   for(let s = t; s <= t0 + JAN; s += .5){ const x = X(s), y = Y(alvoEm(s)); if(s === t) g.moveTo(x, y); else g.lineTo(x, y); }
   g.stroke(); g.setLineDash([]);
   /* rastros que somem com o tempo */
@@ -1225,17 +1227,17 @@ function pdFrame(agora){
     for(let s = Math.max(t0, t - RASTRO); s < t; s += .25){ const e = Math.min(t, s + .25); g.globalAlpha = Math.pow(1 - (t - s) / RASTRO, 1.3) * .9; g.beginPath(); g.moveTo(X(s), Y(f(s))); g.lineTo(X(e), Y(f(e))); g.stroke(); } };
   rastro(alvoEm, cor, 7); rastro(meu, tinta, 4.5);
   const xa = X(t), yg = Y(alvoEm(t)), ym = Y(PD.suave), noPonto = PD.dados && Math.abs(PD.suave / Math.max(1, alvoEm(t)) - 1) <= .08;
-  g.globalAlpha = 1; g.strokeStyle = "#8A8296"; g.lineWidth = 1.5; g.setLineDash([3, 4]); g.beginPath(); g.moveTo(xa, yg); g.lineTo(xa, ym); g.stroke(); g.setLineDash([]);
-  g.globalAlpha = .18; g.fillStyle = cor; g.beginPath(); g.arc(xa, yg, 19 + 3 * Math.sin(agora / 320), 0, 6.283); g.fill();
-  g.globalAlpha = 1; g.beginPath(); g.arc(xa, yg, 11, 0, 6.283); g.fill(); g.strokeStyle = "#FFFFFF"; g.lineWidth = 3; g.stroke();
+  g.globalAlpha = .6; g.strokeStyle = cor; g.lineWidth = 1.5; g.setLineDash([3, 4]); g.beginPath(); g.moveTo(xa, yg); g.lineTo(xa, ym); g.stroke(); g.setLineDash([]);
+  g.globalAlpha = .22; g.fillStyle = cor; g.beginPath(); g.arc(xa, yg, 19 + 3 * Math.sin(agora / 320), 0, 6.283); g.fill();
+  g.globalAlpha = 1; g.beginPath(); g.arc(xa, yg, 11, 0, 6.283); g.fill();
   if(PD.dados){
-    if(noPonto){ g.fillStyle = "#FFD23F"; g.beginPath(); g.arc(xa, ym, 12.5, 0, 6.283); g.fill(); }
-    g.fillStyle = tinta; g.beginPath(); g.arc(xa, ym, 7.5, 0, 6.283); g.fill(); g.strokeStyle = "#FFFFFF"; g.lineWidth = 2; g.stroke();
+    if(noPonto){ g.globalAlpha = .45; g.fillStyle = tinta; g.beginPath(); g.arc(xa, ym, 13.5, 0, 6.283); g.fill(); g.globalAlpha = 1; }
+    g.fillStyle = tinta; g.beginPath(); g.arc(xa, ym, 7.5, 0, 6.283); g.fill(); g.strokeStyle = "#1A1423"; g.lineWidth = 2; g.stroke();
   }
   /* fogos pequenos ao cumprir uma etapa */
   PD.fogos = PD.fogos.filter(f => agora - f.t0 < 1250);
   PD.fogos.forEach(f => { const a = (agora - f.t0) / 1000; if(a < 0) return;
-    f.ps.forEach(p => { g.globalAlpha = Math.max(0, 1 - a / 1.25); g.fillStyle = p.cor; g.beginPath(); g.arc(f.x * W + p.vx * a * (1 - a * .3), f.y * H + p.vy * a * (1 - a * .3) + 70 * a * a, Math.max(.6, 3.4 * (1 - a / 1.6)), 0, 6.283); g.fill(); }); });
+    f.ps.forEach(p => { g.globalAlpha = Math.max(0, 1 - a / 1.25); g.fillStyle = p.cor; g.beginPath(); g.arc(f.x * W + p.vx * a * (1 - a * .3), f.y * H + p.vy * a * (1 - a * .3) + 70 * a * a, Math.max(.8, 4.4 * (1 - a / 1.6)), 0, 6.283); g.fill(); }); });
   g.globalAlpha = 1;
 }
 /* Janela menor: o treino inteiro, com o roteiro da guia e o que você fez até agora. */
@@ -1265,6 +1267,7 @@ function pdAtualiza(){
     if(r >= .92 && r <= 1.08) guia = "No ponto. Segure assim.";
     else if(r < .92) guia = !pot ? "Acelere" : cad != null && cad < sg.cad[0] ? "Acelere o giro" : "Aumente a carga";
     else guia = !pot ? "Alivie o ritmo" : cad != null && cad > sg.cad[1] ? "Gire mais devagar" : "Alivie a carga"; }
+  if(R.estado !== "pausado" && Date.now() < (PD.festaAte || 0)) guia = t >= PD.dur ? "Treino cumprido!" : "Etapa cumprida!";
   $("pd-guia").textContent = guia;
   let dica = `giro de ${sg.cad[0]} a ${sg.cad[1]} rpm`;
   if(t < PD.dur && sg.fim - t <= 20){ const prox = PD.segs[k + 1]; dica = prox ? `em ${sg.fim - t} s: ${prox.f0 > sg.f1 + .02 ? "sobe" : prox.f0 < sg.f1 - .02 ? "desce" : "segue"} para ${fmt(prox.f0 * pdRef())} ${un}` : `faltam ${sg.fim - t} s`; }
