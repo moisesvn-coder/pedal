@@ -272,6 +272,21 @@ input[type=number]{font-variant-numeric:tabular-nums}
 .pd-nums small{font-size:.74rem;font-weight:600}
 .st-opc.dois{grid-template-columns:repeat(2,minmax(0,1fr))}
 .st-opc.dois button{min-height:44px;font-size:.92rem}
+.pedalando .st-head{display:none}
+.pedalando .intro-in,.pedalando .st-body{gap:10px}
+.pedalando .st-body{padding-top:0}
+.pd-topo{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pd-topo .st-opc{flex:none;width:min(200px,52%)}
+.pd-topo .st-opc button{font-size:.84rem;border-radius:14px}
+.pd-guia{font-size:clamp(1.5rem,7.6vw,2.1rem);font-weight:800;line-height:1.05;letter-spacing:-.02em;min-height:2.15em;display:flex;align-items:flex-end;text-wrap:balance}
+.pd-fig{padding:12px 14px;gap:8px}
+.pd-fig .fig-top b{font-variant-numeric:tabular-nums;color:#1A1423}
+.pd-cv{width:100%;height:clamp(150px,29vh,230px);display:block}
+.pd-ov{width:100%;height:54px;display:block}
+.pd-trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pd-trio div{display:flex;flex-direction:column;min-width:0}
+.pd-trio span{font-size:.66rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#5A5366}
+.pd-trio b{font-size:1.22rem;font-weight:800;letter-spacing:-.02em;line-height:1.15;font-variant-numeric:tabular-nums;white-space:nowrap}
 #escolha,#alvo,#metricas,#resumo,#a-pausar,#a-finalizar{display:none!important}
 @keyframes sobe{from{opacity:0;transform:translateY(18px)}}
 @keyframes enche{from{width:0}}
@@ -306,8 +321,9 @@ input[type=number]{font-variant-numeric:tabular-nums}
       <div class="grade-metas">
         <div class="field"><label for="aj-peso">Seu peso (kg)</label><input type="number" inputmode="decimal" id="aj-peso" min="30" max="250" step="0.5"></div>
         <div class="field"><label for="aj-vel">Velocidade moderada (km/h)</label><input type="number" inputmode="decimal" id="aj-vel" min="5" max="80" step="0.5"></div>
+        <div class="field"><label for="aj-pot">Potência moderada (W)</label><input type="number" inputmode="numeric" id="aj-pot" min="20" max="600" step="5"></div>
       </div>
-      <span class="sub">Ficam só neste celular. Energia = velocidade × peso × tempo. O treino leve usa 80% dessa velocidade; o pesado, 120%.</span></div>
+      <span class="sub">Ficam só neste celular. A bolinha guia parte da potência moderada: o treino leve pede 70% dela; o pesado, 130%. Sem potência na bike, ela usa a velocidade.</span></div>
     <div class="field" hidden><label>Minhas metas</label>
       <div class="grade-metas">
         <div class="field"><label for="aj-tm">Por treino: minutos</label><input type="number" inputmode="numeric" id="aj-tm" min="1" max="600" step="1"></div>
@@ -676,6 +692,7 @@ function iniciarDemo(){
     let cad = 82, pot = 120;
     if(b && b.bloco.tipo === "rpm") cad = b.bloco.alvo;
     if(b && b.bloco.tipo === "watts") pot = b.bloco.alvo;
+    if(PD.ativo) pot = PD.pRef * fracEm(R.seg) * (.93 + .14 * Math.sin(ph / 7));
     live.cad = Math.max(0, Math.round(cad + Math.sin(ph/4) * 4 + (Math.random() - .5) * 4));
     live.pot = Math.max(0, Math.round(pot + Math.sin(ph/6) * 12 + (Math.random() - .5) * 10));
     live.vel = live.cad * 0.37;
@@ -1069,7 +1086,7 @@ function renderEu(){ $("eu-nome").textContent = S.eu ? nomeDe(S.eu) : "Escolha q
 function renderAjustes(){
   $("aj-perfis").innerHTML = S.perfis.map(p => `<button data-eu="${esc(p.id)}" aria-pressed="${String(p.id) === String(S.eu)}">${esc(p.nome)}</button>`).join("");
   $("aj-api").value = apiUrl();
-  $("aj-peso").value = LS.get("pd.peso", "") || ""; $("aj-vel").value = velModerada();
+  $("aj-peso").value = LS.get("pd.peso", "") || ""; $("aj-vel").value = velModerada(); $("aj-pot").value = potModerada();
   const m = metaDe(S.eu);
   $("aj-nome").value = S.eu ? nomeDe(S.eu) : "";
   $("aj-tm").value = m.treinoMin; $("aj-tk").value = m.treinoKcal; $("aj-sm").value = m.semanaMin; $("aj-sk").value = m.semanaKcal;
@@ -1088,12 +1105,13 @@ function renderTudo(){ atualizarOrdem(); renderEu(); renderEscolha(); renderTrei
 const CARGA_SEMANA = 150, TREINOS_SEMANA = 3;
 const DURS = [{id:"curto", nome:"Curto", min:20}, {id:"medio", nome:"Médio", min:35}, {id:"longo", nome:"Longo", min:50}];
 const INTS = [
-  {id:"leve", nome:"Leve", fator:.5, vel:.8, tema:"verde", cor:"#0B6E6A", fala:"dá para conversar"},
-  {id:"moderado", nome:"Moderado", fator:1, vel:1, tema:"roxo", cor:"#5B3FD9", fala:"só frases curtas"},
-  {id:"pesado", nome:"Pesado", fator:2, vel:1.2, tema:"coral", cor:"#D9481F", fala:"mal dá para falar"}
+  {id:"leve", nome:"Leve", fator:.5, vel:.8, tema:"verde", cor:"#0B6E6A", fala:"dá para conversar", formato:"ritmo constante"},
+  {id:"moderado", nome:"Moderado", fator:1, vel:1, tema:"roxo", cor:"#5B3FD9", fala:"só frases curtas", formato:"degraus suaves"},
+  {id:"pesado", nome:"Pesado", fator:2, vel:1.2, tema:"coral", cor:"#D9481F", fala:"mal dá para falar", formato:"tiros de 2 min"}
 ];
 const pesoKg = () => { const v = +LS.get("pd.peso", 0); return v >= 30 && v <= 250 ? v : 70; };
 const velModerada = () => { const v = +LS.get("pd.vmod", 0); return v >= 5 && v <= 80 ? v : 25; };
+const potModerada = () => { const v = +LS.get("pd.pref", 0); return v >= 20 && v <= 600 ? v : Math.round(1.4 * pesoKg() / 5) * 5; };
 const durDe = id => DURS.find(d => d.id === id) || DURS[1];
 const intDe = id => INTS.find(i => i.id === id) || INTS[1];
 const fmtPts = v => String(Math.round(v * 10) / 10).replace(".", ",");
@@ -1107,24 +1125,50 @@ function sugestao(precisa){
 }
 
 /* ---------- treino em tela cheia: tempo, energia e a meta ao longo do tempo ---------- */
-const PD = {ativo:false, d:null, i:null, rotulo:"", dur:0, vAlvo:0, peso:70, eAlvo:0, curva:[], resumo:null, confirma:null, dados:false};
+const PD = {ativo:false, d:null, i:null, rotulo:"", dur:0, vAlvo:0, peso:70, eAlvo:0, resumo:null, confirma:null, dados:false, segs:[], hist:[], fogos:[], am:[]};
 function pdEnergia(){ return R.dist / 1000 * PD.peso; }   /* velocidade × peso × tempo = distância × peso, em kg·km */
-function pdPontos(){ const vMed = R.seg ? R.dist / R.seg * 3.6 : 0, ader = PD.dados ? Math.min(1, vMed / PD.vAlvo) : 1; return R.seg / 60 * PD.i.fator * ader; }
+function pdPontos(){ return R.seg / 60 * PD.i.fator * (PD.nAd ? PD.somaAd / PD.nAd : 1); }
 function pdExtras(){ return {pts: Math.round(pdPontos() * 10) / 10, en: Math.round(pdEnergia()), dur: PD.d.id, int: PD.i.id}; }
+/* Roteiro do treino em frações da referência moderada: aquecimento, etapas e desaquecimento. */
+function montarSegs(d, i){
+  const T = d.min * 60, aq = Math.min(300, Math.max(120, Math.round(T * .12 / 30) * 30)), fimMain = T - aq, segs = [];
+  const base = i.id === "leve" ? .7 : i.id === "moderado" ? 1 : 1.3, cad = i.id === "leve" ? [70, 80] : i.id === "moderado" ? [78, 88] : [85, 95];
+  segs.push({ini:0, fim:aq, f0:.5, f1:base * .9, nome:"Aquecimento", cad:[70, 80]});
+  if(i.id === "pesado"){
+    let t = aq, forte = true;
+    while(t < fimMain){ const f = Math.min(fimMain, t + 120); segs.push({ini:t, fim:f, f0: forte ? 1.3 : .75, f1: forte ? 1.3 : .75, nome: forte ? "Tiro forte" : "Recuperação", cad: forte ? [85, 95] : [75, 85]}); t = f; forte = !forte; }
+  } else {
+    const passos = i.id === "moderado" ? [.95, 1.05, 1.1, 1.05, .95] : [1, 1.08, 1], L = (fimMain - aq) / passos.length;
+    passos.forEach((m, k) => segs.push({ini:Math.round(aq + L * k), fim:Math.round(aq + L * (k + 1)), f0:base * m, f1:base * m, nome:`Etapa ${k + 1} de ${passos.length}`, cad}));
+  }
+  segs.push({ini:fimMain, fim:T, f0:base * .8, f1:.45, nome:"Desaquecimento", cad:[65, 80]});
+  return segs;
+}
+function segEm(t){ const s = PD.segs; for(let k = 0; k < s.length; k++) if(t < s[k].fim) return k; return s.length - 1; }
+function fracEm(t){
+  const s = PD.segs, k = segEm(t), g = s[k], tt = Math.min(t, g.fim);
+  let v = g.f0 + (g.f1 - g.f0) * (tt - g.ini) / Math.max(1, g.fim - g.ini);
+  if(k > 0 && t - g.ini < 8) v = s[k - 1].f1 + (v - s[k - 1].f1) * (t - g.ini) / 8;   /* transição suave entre etapas */
+  return v;
+}
+const pdRef = () => PD.metrica === "pot" ? PD.pRef : PD.vRef;
+const alvoEm = t => fracEm(t) * pdRef();
 function iniciarPedal(){
   const d = durDe(INTRO.dur), i = intDe(INTRO.int), vAlvo = Math.round(velModerada() * i.vel * 10) / 10, peso = pesoKg();
-  Object.assign(PD, {ativo:true, d, i, rotulo:`${d.nome} · ${i.nome}`, dur:d.min * 60, vAlvo, peso, eAlvo: vAlvo * peso * d.min / 60, curva:[0], resumo:null, confirma:null, dados:false});
+  Object.assign(PD, {ativo:true, d, i, rotulo:`${d.nome} · ${i.nome}`, dur:d.min * 60, vAlvo, peso, eAlvo: vAlvo * peso * d.min / 60, resumo:null, confirma:null, dados:false,
+    segs:montarSegs(d, i), pRef:potModerada(), vRef:velModerada(), metrica:"pot", metFix:false, hist:[0], am:[], val:0, suave:0, somaAd:0, nAd:0, ultSeg:-1, segK:0, fogos:[], tickAt:performance.now()});
   LS.set("pd.ultimoTreino", {dur:d.id, int:i.id});
   $("sel-treino").value = ""; renderEscolha();
   INTRO.modo = "pedal"; renderStory(true); pdVista(); iniciar();
+  cancelAnimationFrame(PD.raf); PD.raf = requestAnimationFrame(pdFrame);
 }
 function pedalBlocos(){
-  return [`<span class="st-pill giro-e">${esc(PD.rotulo)}</span>`,
-    `<div class="st-opc dois"><button data-vista="grafico">Gráfico</button><button data-vista="numeros">Números</button></div>`,
-    `<div class="pd-col" id="pd-vg"><div class="pd-tempo"><b id="pd-t">${mmss(PD.dur)}</b><small id="pd-t-rot">restantes</small></div>` +
-    `<div class="fig"><div class="fig-top"><span>Energia</span><span id="pd-estado">começando</span></div><div class="fig-num"><span id="pd-en">0</span> <small>de ${Math.round(PD.eAlvo).toLocaleString("pt-BR")} kg·km</small></div><svg class="pd-graf" id="pd-graf" viewBox="0 0 300 110" role="img" aria-label="Energia acumulada contra a meta ao longo do treino"></svg><div class="fig-sub" id="pd-dica"></div></div>` +
-    `<div class="pd-mini"><div><span>Velocidade</span><b id="pd-v">—</b><small>alvo ${fmtPts(PD.vAlvo)} km/h</small></div><div><span>Cadência</span><b id="pd-c">—</b><small>rpm</small></div><div><span>Potência</span><b id="pd-p">—</b><small>W</small></div></div></div>` +
-    `<div class="pd-nums" id="pd-vn" hidden><div class="g"><span>Potência</span><b id="pn-p">—</b><small>W</small></div><div><span>Cadência</span><b id="pn-c">—</b><small>rpm</small></div><div><span>Velocidade</span><b id="pn-v">—</b><small>alvo ${fmtPts(PD.vAlvo)} km/h</small></div><div><span>Tempo</span><b id="pn-t">0:00</b><small>de ${PD.d.min} min</small></div><div><span>Distância</span><b id="pn-d">0,00</b><small>km</small></div><div><span>Energia</span><b id="pn-e">0</b><small>de ${Math.round(PD.eAlvo).toLocaleString("pt-BR")} kg·km</small></div><div><span>Calorias</span><b id="pn-k">0</b><small>kcal</small></div></div>`,
+  return [`<div class="pd-topo"><span class="st-pill giro-e">${esc(PD.rotulo)}</span><div class="st-opc dois"><button data-vista="grafico">Gráfico</button><button data-vista="numeros">Números</button></div></div>`,
+    `<div class="pd-col" id="pd-vg"><div class="pd-guia" id="pd-guia">Vamos começar</div>` +
+    `<div class="fig pd-fig"><div class="fig-top"><span id="pd-etapa">Aquecimento</span><span id="pd-dica"></span></div><canvas class="pd-cv" id="pd-cv" role="img" aria-label="Siga a bolinha guia"></canvas>` +
+    `<div class="pd-trio"><div><span>Guia</span><b id="pd-alvo">—</b></div><div><span>Você</span><b id="pd-voce">—</b></div><div><span>Giro</span><b id="pd-c">—</b></div></div></div>` +
+    `<div class="fig pd-fig"><div class="fig-top"><span>Treino inteiro</span><span><b id="pd-t">${mmss(PD.dur)}</b> <span id="pd-t-rot">restantes</span></span></div><canvas class="pd-ov" id="pd-ov" role="img" aria-label="Desempenho no treino inteiro"></canvas></div></div>` +
+    `<div class="pd-nums" id="pd-vn" hidden><div class="g"><span>Potência</span><b id="pn-p">—</b><small id="pn-alvo">W</small></div><div><span>Cadência</span><b id="pn-c">—</b><small>rpm</small></div><div><span>Velocidade</span><b id="pn-v">—</b><small>km/h</small></div><div><span>Tempo</span><b id="pn-t">0:00</b><small>de ${PD.d.min} min</small></div><div><span>Distância</span><b id="pn-d">0,00</b><small>km</small></div><div><span>Energia</span><b id="pn-e">0</b><small>de ${Math.round(PD.eAlvo).toLocaleString("pt-BR")} kg·km</small></div><div><span>Calorias</span><b id="pn-k">0</b><small>kcal</small></div></div>`,
     `<div class="st-esp"></div>`,
     `<div class="st-resp"><button class="st-btn fantasma" data-acao="pausar" id="pd-pausa">Pausar</button><button class="st-btn" data-acao="finalizar" id="pd-fim">Finalizar</button></div>`];
 }
@@ -1134,35 +1178,102 @@ function pdVista(v){
   $("pd-vg").hidden = num; $("pd-vn").hidden = !num;
   document.querySelectorAll("#st-body [data-vista]").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.vista === "numeros") === num)));
 }
+function pdFogos(n){
+  if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cores = ["#FF7A59", "#FFD23F", "#5B3FD9", "#0B6E6A"];
+  for(let b = 0; b < n; b++){
+    const ps = [];
+    for(let j = 0; j < 22; j++){ const a = Math.PI * 2 * j / 22 + Math.random() * .3, v = 55 + Math.random() * 70; ps.push({vx:Math.cos(a) * v, vy:Math.sin(a) * v, cor:cores[(j + b) % 4]}); }
+    PD.fogos.push({t0:performance.now() + b * 230, x:.2 + Math.random() * .6, y:.22 + Math.random() * .3, ps});
+  }
+}
+/* Um passo por segundo pedalado: suaviza a leitura, guarda o histórico e solta os fogos ao cumprir cada etapa. */
+function pdPasso(){
+  const t = R.seg, fresco = Date.now() - live.t < 5000;
+  if(fresco){ PD.dados = true; if(!PD.metFix){ PD.metrica = live.pot != null ? "pot" : "vel"; PD.metFix = true; } }
+  PD.am.push(!fresco ? 0 : PD.metrica === "pot" ? Math.max(0, live.pot || 0) : Math.max(0, live.vel || 0)); if(PD.am.length > 3) PD.am.shift();
+  PD.val = PD.am.reduce((a, b) => a + b, 0) / PD.am.length; PD.hist[t] = PD.val; PD.tickAt = performance.now();
+  const alvo = alvoEm(t);
+  if(PD.dados && alvo > 0){ PD.somaAd += Math.min(1, PD.val / alvo); PD.nAd += 1; }
+  const k = t >= PD.dur ? PD.segs.length : segEm(t);
+  if(k > PD.segK){ PD.segK = k; pdFogos(k >= PD.segs.length ? 3 : 1); if(k < PD.segs.length) bip(false); }
+}
+function pdEscala(){ let m = 0; PD.segs.forEach(g => { m = Math.max(m, g.f0, g.f1); }); let h = 0; for(let j = Math.max(0, R.seg - 120); j <= R.seg; j++) h = Math.max(h, PD.hist[j] || 0); return Math.max(m * pdRef() * 1.35, h * 1.12, 1); }
+function pdTela(cv){
+  const dpr = Math.min(2, window.devicePixelRatio || 1), W = cv.clientWidth, H = cv.clientHeight;
+  if(cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)){ cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H); g.lineCap = "round"; g.lineJoin = "round";
+  return {g, W, H};
+}
+/* Janela de 30 s: as duas bolinhas varrem a tela da esquerda para a direita e deixam rastros que somem. */
+function pdFrame(agora){
+  if(!PD.ativo || INTRO.modo !== "pedal") return;
+  PD.raf = requestAnimationFrame(pdFrame);
+  const cv = $("pd-cv"); if(!cv || $("pd-vg").hidden || !cv.clientWidth) return;
+  const {g, W, H} = pdTela(cv), JAN = 30, RASTRO = 14, cor = PD.i.cor, tinta = "#1A1423";
+  const t = R.seg + (R.estado === "rodando" ? Math.min(1, (agora - PD.tickAt) / 1000) : 0), t0 = Math.floor(t / JAN) * JAN, yMax = pdEscala();
+  const X = s => (s - t0) / JAN * (W - 28) + 14, Y = v => H - 16 - Math.min(1, v / yMax) * (H - 34);
+  PD.suave += (PD.val - PD.suave) * .12;
+  const meu = s => { if(s >= R.seg) return PD.suave; const a = Math.floor(s), va = PD.hist[a] || 0, vb = PD.hist[a + 1] != null ? PD.hist[a + 1] : va; return va + (vb - va) * (s - a); };
+  g.strokeStyle = "#ECE8F4"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(8, H - 10); g.lineTo(W - 8, H - 10); g.stroke();
+  /* caminho que a guia ainda vai fazer nesta tela */
+  g.strokeStyle = cor; g.globalAlpha = .28; g.lineWidth = 4; g.setLineDash([1, 9]); g.beginPath();
+  for(let s = t; s <= t0 + JAN; s += .5){ const x = X(s), y = Y(alvoEm(s)); if(s === t) g.moveTo(x, y); else g.lineTo(x, y); }
+  g.stroke(); g.setLineDash([]);
+  /* rastros que somem com o tempo */
+  const rastro = (f, c, larg) => { g.strokeStyle = c; g.lineWidth = larg;
+    for(let s = Math.max(t0, t - RASTRO); s < t; s += .25){ const e = Math.min(t, s + .25); g.globalAlpha = Math.pow(1 - (t - s) / RASTRO, 1.3) * .9; g.beginPath(); g.moveTo(X(s), Y(f(s))); g.lineTo(X(e), Y(f(e))); g.stroke(); } };
+  rastro(alvoEm, cor, 7); rastro(meu, tinta, 4.5);
+  const xa = X(t), yg = Y(alvoEm(t)), ym = Y(PD.suave), noPonto = PD.dados && Math.abs(PD.suave / Math.max(1, alvoEm(t)) - 1) <= .08;
+  g.globalAlpha = 1; g.strokeStyle = "#8A8296"; g.lineWidth = 1.5; g.setLineDash([3, 4]); g.beginPath(); g.moveTo(xa, yg); g.lineTo(xa, ym); g.stroke(); g.setLineDash([]);
+  g.globalAlpha = .18; g.fillStyle = cor; g.beginPath(); g.arc(xa, yg, 19 + 3 * Math.sin(agora / 320), 0, 6.283); g.fill();
+  g.globalAlpha = 1; g.beginPath(); g.arc(xa, yg, 11, 0, 6.283); g.fill(); g.strokeStyle = "#FFFFFF"; g.lineWidth = 3; g.stroke();
+  if(PD.dados){
+    if(noPonto){ g.fillStyle = "#FFD23F"; g.beginPath(); g.arc(xa, ym, 12.5, 0, 6.283); g.fill(); }
+    g.fillStyle = tinta; g.beginPath(); g.arc(xa, ym, 7.5, 0, 6.283); g.fill(); g.strokeStyle = "#FFFFFF"; g.lineWidth = 2; g.stroke();
+  }
+  /* fogos pequenos ao cumprir uma etapa */
+  PD.fogos = PD.fogos.filter(f => agora - f.t0 < 1250);
+  PD.fogos.forEach(f => { const a = (agora - f.t0) / 1000; if(a < 0) return;
+    f.ps.forEach(p => { g.globalAlpha = Math.max(0, 1 - a / 1.25); g.fillStyle = p.cor; g.beginPath(); g.arc(f.x * W + p.vx * a * (1 - a * .3), f.y * H + p.vy * a * (1 - a * .3) + 70 * a * a, Math.max(.6, 3.4 * (1 - a / 1.6)), 0, 6.283); g.fill(); }); });
+  g.globalAlpha = 1;
+}
+/* Janela menor: o treino inteiro, com o roteiro da guia e o que você fez até agora. */
+function pdGeral(){
+  const cv = $("pd-ov"); if(!cv || $("pd-vg").hidden || !cv.clientWidth) return;
+  const {g, W, H} = pdTela(cv), cor = PD.i.cor, tMax = Math.max(PD.dur, R.seg), yMax = pdEscala(), X = s => s / tMax * (W - 8) + 4, Y = v => H - 4 - Math.min(1, v / yMax) * (H - 10), passo = tMax / 150;
+  g.beginPath(); g.moveTo(X(0), H - 4); for(let s = 0; s <= tMax; s += passo) g.lineTo(X(s), Y(alvoEm(s))); g.lineTo(X(tMax), H - 4); g.closePath(); g.globalAlpha = .16; g.fillStyle = cor; g.fill();
+  g.globalAlpha = .6; g.strokeStyle = cor; g.lineWidth = 2; g.beginPath(); for(let s = 0; s <= tMax; s += passo){ if(s === 0) g.moveTo(X(s), Y(alvoEm(s))); else g.lineTo(X(s), Y(alvoEm(s))); } g.stroke();
+  g.globalAlpha = 1; g.strokeStyle = "#1A1423"; g.lineWidth = 2; g.beginPath(); const pj = Math.max(1, Math.round(tMax / 240));
+  for(let j = 0; j <= R.seg; j += pj){ if(j === 0) g.moveTo(X(0), Y(PD.hist[0] || 0)); else g.lineTo(X(j), Y(PD.hist[j] || 0)); } g.stroke();
+  g.strokeStyle = "#8A8296"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(X(R.seg), 2); g.lineTo(X(R.seg), H - 2); g.stroke();
+  g.fillStyle = "#1A1423"; g.beginPath(); g.arc(X(R.seg), Y(PD.val), 4, 0, 6.283); g.fill();
+}
 function pdAtualiza(){
-  const fresco = Date.now() - live.t < 5000; if(fresco) PD.dados = true;
-  const en = pdEnergia(), t = R.seg, resta = PD.dur - t;
+  if(R.estado === "rodando" && R.seg !== PD.ultSeg){ PD.ultSeg = R.seg; pdPasso(); }
+  const fresco = Date.now() - live.t < 5000, t = R.seg, resta = PD.dur - t, pot = PD.metrica === "pot", un = pot ? "W" : "km/h";
+  const fmt = v => pot ? String(Math.round(v)) : nf1.format(v), alvo = alvoEm(t), k = segEm(t), sg = PD.segs[k], cad = fresco && live.cad != null ? Math.round(live.cad) : null;
   $("pd-t").textContent = resta >= 0 ? mmss(resta) : "+" + mmss(-resta);
   $("pd-t-rot").textContent = R.estado === "pausado" ? "em pausa" : resta >= 0 ? "restantes" : "além da meta";
-  $("pd-en").textContent = Math.round(en).toLocaleString("pt-BR");
-  $("pd-v").textContent = fresco && live.vel != null ? nf1.format(live.vel) : "—";
-  $("pd-c").textContent = fresco && live.cad != null ? Math.round(live.cad) : "—";
-  $("pd-p").textContent = fresco && live.pot != null ? Math.max(0, Math.round(live.pot)) : "—";
+  $("pd-etapa").textContent = t >= PD.dur ? "Treino cumprido" : sg.nome;
+  $("pd-alvo").textContent = `${fmt(alvo)} ${un}`; $("pd-voce").textContent = PD.dados ? `${fmt(PD.val)} ${un}` : "—"; $("pd-c").textContent = cad != null ? `${cad} rpm` : "—";
+  let guia;
+  if(R.estado === "pausado") guia = "Em pausa";
+  else if(!PD.dados) guia = "Conecte a bike para seguir a bolinha";
+  else if(t < 4) guia = "Vamos começar";
+  else { const r = alvo > 0 ? PD.val / alvo : 1;
+    if(r >= .92 && r <= 1.08) guia = "No ponto. Segure assim.";
+    else if(r < .92) guia = !pot ? "Acelere" : cad != null && cad < sg.cad[0] ? "Acelere o giro" : "Aumente a carga";
+    else guia = !pot ? "Alivie o ritmo" : cad != null && cad > sg.cad[1] ? "Gire mais devagar" : "Alivie a carga"; }
+  $("pd-guia").textContent = guia;
+  let dica = `giro de ${sg.cad[0]} a ${sg.cad[1]} rpm`;
+  if(t < PD.dur && sg.fim - t <= 20){ const prox = PD.segs[k + 1]; dica = prox ? `em ${sg.fim - t} s: ${prox.f0 > sg.f1 + .02 ? "sobe" : prox.f0 < sg.f1 - .02 ? "desce" : "segue"} para ${fmt(prox.f0 * pdRef())} ${un}` : `faltam ${sg.fim - t} s`; }
+  $("pd-dica").textContent = dica;
+  $("pn-p").textContent = fresco && live.pot != null ? Math.max(0, Math.round(live.pot)) : "—"; $("pn-alvo").textContent = pot ? `guia em ${fmt(alvo)} W` : "W";
+  $("pn-c").textContent = cad != null ? cad : "—"; $("pn-v").textContent = fresco && live.vel != null ? nf1.format(live.vel) : "—";
+  $("pn-t").textContent = mmss(t); $("pn-d").textContent = nf2.format(R.dist / 1000); $("pn-e").textContent = Math.round(pdEnergia()).toLocaleString("pt-BR"); $("pn-k").textContent = Math.round(R.j / 1000);
   $("pd-pausa").textContent = R.estado === "pausado" ? "Retomar" : "Pausar";
-  $("pn-p").textContent = $("pd-p").textContent; $("pn-c").textContent = $("pd-c").textContent; $("pn-v").textContent = $("pd-v").textContent;
-  $("pn-t").textContent = mmss(t); $("pn-d").textContent = nf2.format(R.dist / 1000); $("pn-e").textContent = $("pd-en").textContent; $("pn-k").textContent = Math.round(R.j / 1000);
-  const k = Math.floor(t / 5); while(PD.curva.length <= k) PD.curva.push(en);
-  const esperado = PD.eAlvo * Math.min(1, t / PD.dur), razao = esperado > 0 ? en / esperado : 1;
-  let estado = "começando";
-  if(!PD.dados) estado = "sem dados da bike";
-  else if(t >= PD.dur && en >= PD.eAlvo) estado = "meta batida";
-  else if(t >= 30) estado = razao >= 1.03 ? "à frente da meta" : razao >= .97 ? "no ritmo" : "atrás da meta";
-  $("pd-estado").textContent = estado;
-  $("pd-dica").textContent = !PD.dados ? "Conecte a bike para a energia contar." : t >= 30 && razao < .97 ? `Acelere: o alvo é ${fmtPts(PD.vAlvo)} km/h.` : `Este treino já vale ${fmtPts(pdPontos())} pontos.`;
-  const W = 300, H = 110, tMax = Math.max(PD.dur, t), yMax = Math.max(PD.eAlvo, en) * 1.12 || 1;
-  const x = s => (s / tMax * (W - 12) + 6).toFixed(1), y = e => (H - 6 - e / yMax * (H - 14)).toFixed(1);
-  const pts = PD.curva.map((e, j) => `${x(Math.min(j * 5, t))},${y(e)}`).concat([`${x(t)},${y(en)}`]).join(" ");
-  $("pd-graf").innerHTML = `<line x1="6" y1="${H - 6}" x2="${W - 6}" y2="${H - 6}" stroke="#DDD7EE" stroke-width="1"/>` +
-    `<polyline points="${x(0)},${y(0)} ${x(PD.dur)},${y(PD.eAlvo)} ${x(tMax)},${y(PD.eAlvo)}" fill="none" stroke="#8A8296" stroke-width="2" stroke-dasharray="5 5"/>` +
-    `<polygon points="${x(0)},${y(0)} ${pts} ${x(t)},${y(0)}" fill="${PD.i.cor}" opacity=".16"/>` +
-    `<polyline points="${pts}" fill="none" stroke="${PD.i.cor}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>` +
-    `<circle cx="${x(t)}" cy="${y(esperado)}" r="4" fill="#FFFFFF" stroke="#8A8296" stroke-width="2"/>` +
-    `<circle cx="${x(t)}" cy="${y(en)}" r="5.5" fill="${PD.i.cor}" stroke="#FFFFFF" stroke-width="2"/>`;
+  pdGeral();
 }
 async function concluirPedal(){
   confirmaFim = setTimeout(() => {}, 1);   /* a confirmação já foi feita nesta tela */
@@ -1177,7 +1288,7 @@ function fimBlocos(){
   const aviso = {ok:"Salvo no histórico de vocês.", local:"Salvo neste celular.", pendente:"Sem internet agora: guardei neste celular e envio depois.", demo:"Era um teste: não foi salvo.", curto:"Menos de 1 minuto: não foi salvo."}[status] || "";
   const coach = !salvo ? "" : falta <= 0 ? "Carga da semana completa. Parabéns!" : mais > 0 ? `Faltam ${fmtPts(falta)} pontos: mais ${mais} ${mais === 1 ? "treino" : "treinos"} como este.` : `Faltam ${fmtPts(falta)} pontos na semana.`;
   return [`<span class="st-pill giro-e">${esc(PD.rotulo)}</span>`, `<h2 class="st-h1">${titulo}</h2>`,
-    `<p class="st-p">${durTxt(r.dur)} · ${Math.round(x.en).toLocaleString("pt-BR")} kg·km · ${fmtPts(x.pts)} pontos</p>`,
+    `<p class="st-p">${durTxt(r.dur)} · ${r.potMed ? r.potMed + " W médios" : Math.round(x.en).toLocaleString("pt-BR") + " kg·km"} · ${fmtPts(x.pts)} pontos</p>`,
     figBarra("Carga da semana", c, CARGA_SEMANA, "pts", "#5B3FD9", "giro-e"),
     coach ? `<p class="st-p">${coach}</p>` : "", `<p class="st-nota">${aviso}</p>`, `<div class="st-esp"></div>`,
     `<button class="st-btn grande" data-acao="fechar-fim">Ver evolução</button>`];
@@ -1247,7 +1358,7 @@ function storyBlocos(){
     return [`<h2 class="st-h1">Treino de hoje</h2>`, `<p class="st-p">${pede}</p>`,
       `<div class="st-opc">${DURS.map(o => `<button data-dur="${o.id}" aria-pressed="${o.id === d.id}">${o.nome}<small>${o.min} min</small></button>`).join("")}</div>`,
       `<div class="st-opc">${INTS.map(o => `<button data-int="${o.id}" aria-pressed="${o.id === i.id}">${o.nome}<small>${o.fala}</small></button>`).join("")}</div>`,
-      `<div class="fig giro-e"><div class="fig-num">${d.nome} · ${i.nome}</div><div class="fig-sub">${d.min} min · alvo de ${fmtPts(velModerada() * i.vel)} km/h · vale ${fmtPts(pts)} pontos</div></div>`,
+      `<div class="fig giro-e"><div class="fig-num">${d.nome} · ${i.nome}</div><div class="fig-sub">${d.min} min · ${i.formato} · vale ${fmtPts(pts)} pontos</div></div>`,
       `<p class="st-p">${efeito}</p>`, blocoBike(), `<div class="st-esp"></div>`,
       `<button class="st-toque" data-ir="4">Toque para continuar ${SETA}</button>`];
   }
@@ -1268,7 +1379,7 @@ function storyBlocos(){
 function renderStory(anim){
   const el = $("intro"), pedal = INTRO.modo === "pedal", fim = INTRO.modo === "fim";
   el.dataset.tema = pedal ? PD.i.tema : fim ? "noite" : TEMAS[INTRO.i];
-  $("st-seg").hidden = !!INTRO.modo; $("st-x").hidden = pedal;
+  $("st-seg").hidden = !!INTRO.modo; $("st-x").hidden = pedal; el.classList.toggle("pedalando", pedal);
   $("st-seg").innerHTML = TEMAS.map((_, k) => `<i class="${k <= INTRO.i ? "on" : ""}"></i>`).join("");
   const corpo = $("st-body"); corpo.classList.toggle("sem-anim", !anim);
   corpo.innerHTML = (pedal ? pedalBlocos() : fim ? fimBlocos() : storyBlocos()).filter(Boolean).map((h, k) => `<div class="st-item${h.indexOf('class="st-esp"') >= 0 ? " st-cresce" : ""}" style="--i:${k}">${h}</div>`).join("");
@@ -1390,6 +1501,8 @@ $("aj-salvar").addEventListener("click", async () => {
   if(AJ.nome && !nome){ msg.hidden = false; msg.textContent = "Escreva seu nome."; return; }
   const mudouNome = AJ.nome, mudouMetas = AJ.metas;
   const pv = parseFloat(String($("aj-peso").value).replace(",", ".")), vv = parseFloat(String($("aj-vel").value).replace(",", "."));
+  const pp = parseFloat(String($("aj-pot").value).replace(",", "."));
+  if(pp >= 20 && pp <= 600 && pp !== potModerada()) LS.set("pd.pref", pp);
   if(pv >= 30 && pv <= 250) LS.set("pd.peso", pv);
   if(vv >= 5 && vv <= 80) LS.set("pd.vmod", vv);
   msg.hidden = true; LS.set("pd.api", v);
