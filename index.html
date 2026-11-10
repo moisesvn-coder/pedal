@@ -244,6 +244,35 @@ input[type=number]{font-variant-numeric:tabular-nums}
 .st-btn.grande{width:100%;min-height:76px;border-radius:38px;font-size:1.6rem}
 .st-btn:disabled{opacity:.6}
 .st-toque{width:100%;min-height:52px;border:0;background:none;color:inherit;font-weight:700;font-size:1rem;display:flex;align-items:center;justify-content:center;gap:6px}
+.st-mini{margin:0;font-size:.9rem;font-weight:600}
+.st-tres{display:flex;gap:8px}
+.st-tres i{flex:1;height:14px;border-radius:7px;background:#ECE8F4}
+.st-tres i.on{background:#FF7A59}
+.st-opc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.st-opc button{min-height:60px;border:2px solid var(--st-fg);border-radius:18px;background:none;color:var(--st-fg);font-weight:800;font-size:1rem;line-height:1.15;padding:6px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center}
+.st-opc button small{font-size:.72rem;font-weight:600}
+.st-opc button[aria-pressed="true"]{background:var(--st-fg);color:var(--st-bg)}
+.st-opc.grande button{min-height:92px;font-size:2.4rem}
+.pd-tempo{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pd-tempo b{font-size:clamp(4rem,23vw,5.6rem);font-weight:800;line-height:.95;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.pd-tempo small{font-size:1rem;font-weight:700}
+.pd-graf{width:100%;height:auto;display:block}
+.pd-mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pd-mini div{background:var(--st-chip);color:var(--st-chip-fg);border-radius:18px;padding:10px 12px;display:flex;flex-direction:column;min-width:0}
+.pd-mini span{font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.pd-mini b{font-size:1.55rem;font-weight:800;letter-spacing:-.02em;line-height:1.15;font-variant-numeric:tabular-nums}
+.pd-mini small{font-size:.7rem;font-weight:600}
+.pd-col{display:flex;flex-direction:column;gap:14px}
+.pd-nums{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.pd-nums div{background:var(--st-chip);color:var(--st-chip-fg);border-radius:18px;padding:10px 14px;display:flex;flex-direction:column;min-width:0}
+.pd-nums .g{grid-column:1/-1}
+.pd-nums span{font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.pd-nums b{font-size:2.3rem;font-weight:800;letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums}
+.pd-nums .g b{font-size:4.4rem}
+.pd-nums small{font-size:.74rem;font-weight:600}
+.st-opc.dois{grid-template-columns:repeat(2,minmax(0,1fr))}
+.st-opc.dois button{min-height:44px;font-size:.92rem}
+#escolha,#alvo,#metricas,#resumo,#a-pausar,#a-finalizar{display:none!important}
 @keyframes sobe{from{opacity:0;transform:translateY(18px)}}
 @keyframes enche{from{width:0}}
 @keyframes desliza{from{left:0}}
@@ -273,7 +302,13 @@ input[type=number]{font-variant-numeric:tabular-nums}
     <div class="field"><label>Quem usa este celular</label><div class="seg" id="aj-perfis" role="group" aria-label="Quem usa este celular"></div>
 </div>
     <div class="field"><label for="aj-nome">Seu nome</label><input type="text" id="aj-nome" maxlength="24" autocomplete="off"></div>
-    <div class="field"><label>Minhas metas</label>
+    <div class="field"><label>Para calcular a energia</label>
+      <div class="grade-metas">
+        <div class="field"><label for="aj-peso">Seu peso (kg)</label><input type="number" inputmode="decimal" id="aj-peso" min="30" max="250" step="0.5"></div>
+        <div class="field"><label for="aj-vel">Velocidade moderada (km/h)</label><input type="number" inputmode="decimal" id="aj-vel" min="5" max="80" step="0.5"></div>
+      </div>
+      <span class="sub">Ficam só neste celular. Energia = velocidade × peso × tempo. O treino leve usa 80% dessa velocidade; o pesado, 120%.</span></div>
+    <div class="field" hidden><label>Minhas metas</label>
       <div class="grade-metas">
         <div class="field"><label for="aj-tm">Por treino: minutos</label><input type="number" inputmode="numeric" id="aj-tm" min="1" max="600" step="1"></div>
         <div class="field"><label for="aj-tk">Por treino: kcal</label><input type="number" inputmode="numeric" id="aj-tk" min="1" max="5000" step="1"></div>
@@ -315,15 +350,11 @@ input[type=number]{font-variant-numeric:tabular-nums}
 
     <div class="card metas" id="metas-card">
       <div class="meta-grupo">
-        <div class="alvo-top"><span class="eyebrow">Meta do treino</span><span class="chip ok" id="mt-chip" hidden>Meta batida</span></div>
-        <div class="meta-linha"><span>Tempo</span><div class="barra"><i id="mt-tt"></i></div><span class="val" id="mt-tt-v"></span></div>
-        <div class="meta-linha"><span>Energia</span><div class="barra"><i id="mt-te"></i></div><span class="val" id="mt-te-v"></span></div>
+        <div class="alvo-top"><span class="eyebrow">Carga da semana</span><span class="chip ok" id="ms-chip" hidden>Semana fechada</span></div>
+        <div class="meta-linha"><span>Pontos</span><div class="barra"><i id="mt-st"></i></div><span class="val" id="mt-st-v"></span></div>
+        <div class="meta-linha"><span>Treinos</span><div class="barra"><i id="mt-se"></i></div><span class="val" id="mt-se-v"></span></div>
       </div>
-      <div class="meta-grupo">
-        <div class="alvo-top"><span class="eyebrow">Meta da semana</span><span class="chip ok" id="ms-chip" hidden>Semana batida</span></div>
-        <div class="meta-linha"><span>Tempo</span><div class="barra"><i id="mt-st"></i></div><span class="val" id="mt-st-v"></span></div>
-        <div class="meta-linha"><span>Energia</span><div class="barra"><i id="mt-se"></i></div><span class="val" id="mt-se-v"></span></div>
-      </div>
+      <span class="sub">1 ponto = 1 minuto moderado. Leve vale meio; pesado vale dois. Três treinos fecham os 150 da semana.</span>
     </div>
 
     <div class="card alvo" id="alvo" hidden>
@@ -376,12 +407,11 @@ input[type=number]{font-variant-numeric:tabular-nums}
     <span class="eyebrow">Pedaladas</span>
     <div class="lista" id="e-lista"></div>
   </section>
-  <p class="rodape">Energia estimada a partir da potência (1 kJ de trabalho ≈ 1 kcal gasta).</p>
+  <p class="rodape">Energia do treino = velocidade × peso × tempo (kg·km). As kcal do histórico vêm da potência da bike.</p>
 </div>
 
 <nav class="abas" aria-label="Seções"><div>
   <button data-v="pedalar" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="16" r="4"/><circle cx="18" cy="16" r="4"/><path d="M6 16l4-8h5l3 8M9 5h3"/></svg>Pedalar</button>
-  <button data-v="treinos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V14M9 20V8M14 20v-9M19 20V5"/></svg>Treinos</button>
   <button data-v="evolucao"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19h18M4 15l5-5 4 3 7-7"/></svg>Evolução</button>
 </div></nav>
 
@@ -482,7 +512,7 @@ async function sincronizar(){
     salvarCache(); atualizarOrdem();
     const h = new Date(); setSync(`Histórico compartilhado · atualizado às ${String(h.getHours()).padStart(2,"0")}:${String(h.getMinutes()).padStart(2,"0")}` + (S.fila.length ? ` · ${S.fila.length} aguardando envio` : ""));
     renderTudo();
-    if(INTRO.aberta && INTRO.i <= 2) renderStory(false);
+    if(INTRO.aberta && !INTRO.modo && INTRO.i <= 3) renderStory(false);
   }catch(e){
     setSync("Sem contato com a planilha agora. Mostrando o que está salvo neste celular.", true);
   }finally{ S.sincronizando = false; }
@@ -712,8 +742,7 @@ function tick(){
   if(c != null && c > 0){ R.somaC += c; R.nC += 1; }
   if(v != null){ R.dist += v / 3.6; if(v > 0){ R.somaV += v; R.nV += 1; } }
   if(fresco && live.fc){ R.somaFc += live.fc; R.nFc += 1; }
-  const mt = metaDe(S.eu);
-  if(!R.metaBatida && R.seg / 60 >= mt.treinoMin && R.j / 1000 >= mt.treinoKcal){ R.metaBatida = true; bip(true); }
+  if(!R.metaBatida && PD.ativo && R.seg >= PD.dur){ R.metaBatida = true; bip(true); }
   const b = blocoAtual();
   if(b && !b.fim){
     const av = avaliar(b.bloco, c, p);
@@ -742,9 +771,9 @@ async function finalizar(){
     potMed: seg ? Math.round(R.somaP / seg) : 0, potMax: Math.round(R.potMax),
     cadMed: R.nC ? Math.round(R.somaC / R.nC) : 0, velMed: R.nV ? Math.round(R.somaV / R.nV * 10) / 10 : 0,
     fcMed: R.nFc ? Math.round(R.somaFc / R.nFc) : null,
-    treino: R.treino ? R.treino.nome : null, treinoId: R.treino ? R.treino.id : null,
+    treino: PD.ativo ? PD.rotulo : R.treino ? R.treino.nome : null, treinoId: R.treino ? R.treino.id : null,
     aderencia: R.comMeta ? Math.round(R.naMeta / R.comMeta * 100) : null,
-    serie: R.serie, passo: 5
+    serie: PD.ativo ? Object.assign({}, R.serie, {x: pdExtras()}) : R.serie, passo: 5
   };
   let status;
   if(R.demo) status = "demo";
@@ -786,16 +815,14 @@ function setBarra(id, v, alvo, un){
   $(id + "-v").textContent = `${Math.floor(v)} de ${alvo} ${un}`;
 }
 function atualizarMetas(){
-  const m = metaDe(S.eu), ativo = R.estado !== "parado", conta = ativo && !R.demo;
-  const tMin = ativo ? R.seg / 60 : 0, tK = ativo ? R.j / 1000 : 0;
-  setBarra("mt-tt", tMin, m.treinoMin, "min"); setBarra("mt-te", tK, m.treinoKcal, "kcal");
-  $("mt-chip").hidden = !(ativo && tMin >= m.treinoMin && tK >= m.treinoKcal);
-  const s = semanaDe(S.eu), sMin = s.min + (conta ? tMin : 0), sK = s.kcal + (conta ? tK : 0);
-  setBarra("mt-st", sMin, m.semanaMin, "min"); setBarra("mt-se", sK, m.semanaKcal, "kcal");
-  $("ms-chip").hidden = !(sMin >= m.semanaMin && sK >= m.semanaKcal);
+  const c = cargaSemana(S.eu), n = treinosNaSemana(S.eu);
+  setBarra("mt-st", c, CARGA_SEMANA, "pts"); setBarra("mt-se", n, TREINOS_SEMANA, "");
+  $("mt-se-v").textContent = `${n} de ${TREINOS_SEMANA}`;
+  $("ms-chip").hidden = c < CARGA_SEMANA;
 }
 function atualizarPainel(){
   atualizarMetas();
+  if(PD.ativo && $("pd-t")) pdAtualiza();
   const fresco = Date.now() - live.t < 5000;
   setM("m-pot", fresco && live.pot != null ? Math.max(0, Math.round(live.pot)) : "—");
   setM("m-cad", fresco && live.cad != null ? Math.round(live.cad) : "—");
@@ -837,11 +864,12 @@ function atualizarPainel(){
 function renderControles(){
   const e = R.estado;
   $("a-iniciar").hidden = e === "rodando";
-  $("a-iniciar").textContent = e === "pausado" ? "Retomar" : "Começar";
+  $("a-iniciar").textContent = "Preparar treino";
   $("a-pausar").hidden = e !== "rodando";
   $("a-finalizar").hidden = e === "parado";
 }
 function renderResumo(r, status){
+  PD.resumo = {r, status};
   const el = $("resumo");
   const aviso = {
     ok: "Salvo no histórico de vocês.",
@@ -942,9 +970,9 @@ function renderEvolucao(){
 
   // blocos de resumo
   $("e-semana").innerHTML = quem.map(u => {
-    const m = metaDe(u), w = semanaDe(u), cor = corDe(u);
-    const linha = (rot, v, alvo, un) => `<span class="sub">${rot} · ${Math.floor(v)} de ${alvo} ${un}</span><div class="barra"><i style="width:${(Math.min(1, v/alvo)*100).toFixed(1)}%;background:${v >= alvo ? "var(--ok)" : cor}"></i></div>`;
-    return `<div class="meta-pessoa"><div class="tile-nome"><span class="dot" style="background:${cor}"></span><span>${esc(nomeDe(u))}</span></div>${linha("Tempo", w.min, m.semanaMin, "min")}${linha("Energia", w.kcal, m.semanaKcal, "kcal")}</div>`;
+    const cor = corDe(u);
+    const linha = (rot, v, alvo, un) => `<span class="sub">${rot} · ${fmtPts(v)} de ${alvo}${un}</span><div class="barra"><i style="width:${(Math.min(1, v/alvo)*100).toFixed(1)}%;background:${v >= alvo ? "var(--ok)" : cor}"></i></div>`;
+    return `<div class="meta-pessoa"><div class="tile-nome"><span class="dot" style="background:${cor}"></span><span>${esc(nomeDe(u))}</span></div>${linha("Carga", cargaSemana(u), CARGA_SEMANA, " pts")}${linha("Treinos", treinosNaSemana(u), TREINOS_SEMANA, "")}</div>`;
   }).join("");
   $("e-tiles").innerHTML = quem.map(u => {
     const ps = todas.filter(p => p.uid === u);
@@ -1019,7 +1047,7 @@ function renderEvolucao(){
           <div><span>Velocidade</span><b>${p.velMed ? nf1.format(p.velMed) : "—"}</b></div>
           <div><span>Pot. máx.</span><b>${p.potMax || "—"} W</b></div>
           <div><span>Energia</span><b>${p.kj || 0} kcal</b></div>
-          <div><span>Na meta</span><b>${p.aderencia == null ? "—" : p.aderencia + "%"}</b></div>
+          <div><span>Carga</span><b>${fmtPts(cargaDe(p))} pts</b></div>
           ${p.fcMed ? `<div><span>FC média</span><b>${p.fcMed} bpm</b></div>` : ""}
         </div>
         ${miniSerie(p)}
@@ -1041,6 +1069,7 @@ function renderEu(){ $("eu-nome").textContent = S.eu ? nomeDe(S.eu) : "Escolha q
 function renderAjustes(){
   $("aj-perfis").innerHTML = S.perfis.map(p => `<button data-eu="${esc(p.id)}" aria-pressed="${String(p.id) === String(S.eu)}">${esc(p.nome)}</button>`).join("");
   $("aj-api").value = apiUrl();
+  $("aj-peso").value = LS.get("pd.peso", "") || ""; $("aj-vel").value = velModerada();
   const m = metaDe(S.eu);
   $("aj-nome").value = S.eu ? nomeDe(S.eu) : "";
   $("aj-tm").value = m.treinoMin; $("aj-tk").value = m.treinoKcal; $("aj-sm").value = m.semanaMin; $("aj-sk").value = m.semanaKcal;
@@ -1054,9 +1083,109 @@ const AJ = {nome:false, metas:false};
 function abrirAjustes(){ renderAjustes(); $("ajustes").hidden = false; $("ajustes").scrollIntoView({block:"start"}); }
 function renderTudo(){ atualizarOrdem(); renderEu(); renderEscolha(); renderTreinos(); renderEvolucao(); renderControles(); atualizarPainel(); }
 
+/* ---------- carga da semana e treinos (curto, médio, longo × leve, moderado, pesado) ---------- */
+/* OMS, adultos de 18 a 64 anos: pelo menos 150 min/semana de esforço moderado; minuto vigoroso conta em dobro. */
+const CARGA_SEMANA = 150, TREINOS_SEMANA = 3;
+const DURS = [{id:"curto", nome:"Curto", min:20}, {id:"medio", nome:"Médio", min:35}, {id:"longo", nome:"Longo", min:50}];
+const INTS = [
+  {id:"leve", nome:"Leve", fator:.5, vel:.8, tema:"verde", cor:"#0B6E6A", fala:"dá para conversar"},
+  {id:"moderado", nome:"Moderado", fator:1, vel:1, tema:"roxo", cor:"#5B3FD9", fala:"só frases curtas"},
+  {id:"pesado", nome:"Pesado", fator:2, vel:1.2, tema:"coral", cor:"#D9481F", fala:"mal dá para falar"}
+];
+const pesoKg = () => { const v = +LS.get("pd.peso", 0); return v >= 30 && v <= 250 ? v : 70; };
+const velModerada = () => { const v = +LS.get("pd.vmod", 0); return v >= 5 && v <= 80 ? v : 25; };
+const durDe = id => DURS.find(d => d.id === id) || DURS[1];
+const intDe = id => INTS.find(i => i.id === id) || INTS[1];
+const fmtPts = v => String(Math.round(v * 10) / 10).replace(".", ",");
+function cargaDe(p){ const x = p.serie && p.serie.x; return x && x.pts != null ? +x.pts : (p.dur || 0) / 60; }
+function cargaSemana(u){ const ini = inicioSemana(Date.now()).getTime(); return S.pedaladas.filter(p => String(p.uid) === String(u) && p.ts >= ini).reduce((a,p) => a + cargaDe(p), 0); }
+function treinosNaSemana(u){ const ini = inicioSemana(Date.now()).getTime(); return S.pedaladas.filter(p => String(p.uid) === String(u) && p.ts >= ini).length; }
+function sugestao(precisa){
+  let m = null;
+  DURS.forEach(d => INTS.forEach(i => { const p = d.min * i.fator; if(p >= precisa - .01 && (!m || p < m.p || (p === m.p && i.fator < m.i.fator))) m = {d, i, p}; }));
+  return m || {d:DURS[2], i:INTS[2], p:DURS[2].min * INTS[2].fator};
+}
+
+/* ---------- treino em tela cheia: tempo, energia e a meta ao longo do tempo ---------- */
+const PD = {ativo:false, d:null, i:null, rotulo:"", dur:0, vAlvo:0, peso:70, eAlvo:0, curva:[], resumo:null, confirma:null, dados:false};
+function pdEnergia(){ return R.dist / 1000 * PD.peso; }   /* velocidade × peso × tempo = distância × peso, em kg·km */
+function pdPontos(){ const vMed = R.seg ? R.dist / R.seg * 3.6 : 0, ader = PD.dados ? Math.min(1, vMed / PD.vAlvo) : 1; return R.seg / 60 * PD.i.fator * ader; }
+function pdExtras(){ return {pts: Math.round(pdPontos() * 10) / 10, en: Math.round(pdEnergia()), dur: PD.d.id, int: PD.i.id}; }
+function iniciarPedal(){
+  const d = durDe(INTRO.dur), i = intDe(INTRO.int), vAlvo = Math.round(velModerada() * i.vel * 10) / 10, peso = pesoKg();
+  Object.assign(PD, {ativo:true, d, i, rotulo:`${d.nome} · ${i.nome}`, dur:d.min * 60, vAlvo, peso, eAlvo: vAlvo * peso * d.min / 60, curva:[0], resumo:null, confirma:null, dados:false});
+  LS.set("pd.ultimoTreino", {dur:d.id, int:i.id});
+  $("sel-treino").value = ""; renderEscolha();
+  INTRO.modo = "pedal"; renderStory(true); pdVista(); iniciar();
+}
+function pedalBlocos(){
+  return [`<span class="st-pill giro-e">${esc(PD.rotulo)}</span>`,
+    `<div class="st-opc dois"><button data-vista="grafico">Gráfico</button><button data-vista="numeros">Números</button></div>`,
+    `<div class="pd-col" id="pd-vg"><div class="pd-tempo"><b id="pd-t">${mmss(PD.dur)}</b><small id="pd-t-rot">restantes</small></div>` +
+    `<div class="fig"><div class="fig-top"><span>Energia</span><span id="pd-estado">começando</span></div><div class="fig-num"><span id="pd-en">0</span> <small>de ${Math.round(PD.eAlvo).toLocaleString("pt-BR")} kg·km</small></div><svg class="pd-graf" id="pd-graf" viewBox="0 0 300 110" role="img" aria-label="Energia acumulada contra a meta ao longo do treino"></svg><div class="fig-sub" id="pd-dica"></div></div>` +
+    `<div class="pd-mini"><div><span>Velocidade</span><b id="pd-v">—</b><small>alvo ${fmtPts(PD.vAlvo)} km/h</small></div><div><span>Cadência</span><b id="pd-c">—</b><small>rpm</small></div><div><span>Potência</span><b id="pd-p">—</b><small>W</small></div></div></div>` +
+    `<div class="pd-nums" id="pd-vn" hidden><div class="g"><span>Potência</span><b id="pn-p">—</b><small>W</small></div><div><span>Cadência</span><b id="pn-c">—</b><small>rpm</small></div><div><span>Velocidade</span><b id="pn-v">—</b><small>alvo ${fmtPts(PD.vAlvo)} km/h</small></div><div><span>Tempo</span><b id="pn-t">0:00</b><small>de ${PD.d.min} min</small></div><div><span>Distância</span><b id="pn-d">0,00</b><small>km</small></div><div><span>Energia</span><b id="pn-e">0</b><small>de ${Math.round(PD.eAlvo).toLocaleString("pt-BR")} kg·km</small></div><div><span>Calorias</span><b id="pn-k">0</b><small>kcal</small></div></div>`,
+    `<div class="st-esp"></div>`,
+    `<div class="st-resp"><button class="st-btn fantasma" data-acao="pausar" id="pd-pausa">Pausar</button><button class="st-btn" data-acao="finalizar" id="pd-fim">Finalizar</button></div>`];
+}
+function pdVista(v){
+  if(v) LS.set("pd.vista", v);
+  const num = LS.get("pd.vista", "grafico") === "numeros";
+  $("pd-vg").hidden = num; $("pd-vn").hidden = !num;
+  document.querySelectorAll("#st-body [data-vista]").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.vista === "numeros") === num)));
+}
+function pdAtualiza(){
+  const fresco = Date.now() - live.t < 5000; if(fresco) PD.dados = true;
+  const en = pdEnergia(), t = R.seg, resta = PD.dur - t;
+  $("pd-t").textContent = resta >= 0 ? mmss(resta) : "+" + mmss(-resta);
+  $("pd-t-rot").textContent = R.estado === "pausado" ? "em pausa" : resta >= 0 ? "restantes" : "além da meta";
+  $("pd-en").textContent = Math.round(en).toLocaleString("pt-BR");
+  $("pd-v").textContent = fresco && live.vel != null ? nf1.format(live.vel) : "—";
+  $("pd-c").textContent = fresco && live.cad != null ? Math.round(live.cad) : "—";
+  $("pd-p").textContent = fresco && live.pot != null ? Math.max(0, Math.round(live.pot)) : "—";
+  $("pd-pausa").textContent = R.estado === "pausado" ? "Retomar" : "Pausar";
+  $("pn-p").textContent = $("pd-p").textContent; $("pn-c").textContent = $("pd-c").textContent; $("pn-v").textContent = $("pd-v").textContent;
+  $("pn-t").textContent = mmss(t); $("pn-d").textContent = nf2.format(R.dist / 1000); $("pn-e").textContent = $("pd-en").textContent; $("pn-k").textContent = Math.round(R.j / 1000);
+  const k = Math.floor(t / 5); while(PD.curva.length <= k) PD.curva.push(en);
+  const esperado = PD.eAlvo * Math.min(1, t / PD.dur), razao = esperado > 0 ? en / esperado : 1;
+  let estado = "começando";
+  if(!PD.dados) estado = "sem dados da bike";
+  else if(t >= PD.dur && en >= PD.eAlvo) estado = "meta batida";
+  else if(t >= 30) estado = razao >= 1.03 ? "à frente da meta" : razao >= .97 ? "no ritmo" : "atrás da meta";
+  $("pd-estado").textContent = estado;
+  $("pd-dica").textContent = !PD.dados ? "Conecte a bike para a energia contar." : t >= 30 && razao < .97 ? `Acelere: o alvo é ${fmtPts(PD.vAlvo)} km/h.` : `Este treino já vale ${fmtPts(pdPontos())} pontos.`;
+  const W = 300, H = 110, tMax = Math.max(PD.dur, t), yMax = Math.max(PD.eAlvo, en) * 1.12 || 1;
+  const x = s => (s / tMax * (W - 12) + 6).toFixed(1), y = e => (H - 6 - e / yMax * (H - 14)).toFixed(1);
+  const pts = PD.curva.map((e, j) => `${x(Math.min(j * 5, t))},${y(e)}`).concat([`${x(t)},${y(en)}`]).join(" ");
+  $("pd-graf").innerHTML = `<line x1="6" y1="${H - 6}" x2="${W - 6}" y2="${H - 6}" stroke="#DDD7EE" stroke-width="1"/>` +
+    `<polyline points="${x(0)},${y(0)} ${x(PD.dur)},${y(PD.eAlvo)} ${x(tMax)},${y(PD.eAlvo)}" fill="none" stroke="#8A8296" stroke-width="2" stroke-dasharray="5 5"/>` +
+    `<polygon points="${x(0)},${y(0)} ${pts} ${x(t)},${y(0)}" fill="${PD.i.cor}" opacity=".16"/>` +
+    `<polyline points="${pts}" fill="none" stroke="${PD.i.cor}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>` +
+    `<circle cx="${x(t)}" cy="${y(esperado)}" r="4" fill="#FFFFFF" stroke="#8A8296" stroke-width="2"/>` +
+    `<circle cx="${x(t)}" cy="${y(en)}" r="5.5" fill="${PD.i.cor}" stroke="#FFFFFF" stroke-width="2"/>`;
+}
+async function concluirPedal(){
+  confirmaFim = setTimeout(() => {}, 1);   /* a confirmação já foi feita nesta tela */
+  await finalizar();
+  PD.ativo = false; INTRO.modo = "fim"; renderStory(true);
+}
+function fimBlocos(){
+  const res = PD.resumo || {r:{dur:0}, status:"curto"}, r = res.r, status = res.status, x = (r.serie && r.serie.x) || {pts:0, en:0};
+  const salvo = status === "ok" || status === "local" || status === "pendente";
+  const c = cargaSemana(S.eu), falta = Math.max(0, CARGA_SEMANA - c), mais = x.pts > 0 ? Math.ceil(falta / x.pts) : 0;
+  const titulo = status === "demo" ? "Treino de teste" : status === "curto" ? "Curto demais" : r.dur >= PD.dur ? "Treino completo!" : "Treino feito!";
+  const aviso = {ok:"Salvo no histórico de vocês.", local:"Salvo neste celular.", pendente:"Sem internet agora: guardei neste celular e envio depois.", demo:"Era um teste: não foi salvo.", curto:"Menos de 1 minuto: não foi salvo."}[status] || "";
+  const coach = !salvo ? "" : falta <= 0 ? "Carga da semana completa. Parabéns!" : mais > 0 ? `Faltam ${fmtPts(falta)} pontos: mais ${mais} ${mais === 1 ? "treino" : "treinos"} como este.` : `Faltam ${fmtPts(falta)} pontos na semana.`;
+  return [`<span class="st-pill giro-e">${esc(PD.rotulo)}</span>`, `<h2 class="st-h1">${titulo}</h2>`,
+    `<p class="st-p">${durTxt(r.dur)} · ${Math.round(x.en).toLocaleString("pt-BR")} kg·km · ${fmtPts(x.pts)} pontos</p>`,
+    figBarra("Carga da semana", c, CARGA_SEMANA, "pts", "#5B3FD9", "giro-e"),
+    coach ? `<p class="st-p">${coach}</p>` : "", `<p class="st-nota">${aviso}</p>`, `<div class="st-esp"></div>`,
+    `<button class="st-btn grande" data-acao="fechar-fim">Ver evolução</button>`];
+}
+
 /* ---------- abertura em stories ---------- */
-const INTRO = {aberta:false, vista:false, i:0, treinoId:"", perguntas:[], q:0, espera:false, aviso:""};
-const TEMAS = ["coral","roxo","verde","amarelo","noite"];
+const INTRO = {aberta:false, vista:false, modo:"", i:0, perguntas:[], q:0, espera:false, aviso:"", restam:0, dur:"medio", int:"moderado"};
+const TEMAS = ["coral","roxo","amarelo","verde","amarelo","noite"];
 const PERGUNTAS_PAIS = [
   "Você contou? Estão os três aí?",
   "Alguém está quieto demais?",
@@ -1071,21 +1200,15 @@ const PERGUNTAS_PAIS = [
 const SETA = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
 function bikeLigada(){ return !!(BT.demo || (BT.dev && BT.dev.gatt && BT.dev.gatt.connected && BT.fonte)); }
 function saudacao(){ const h = new Date().getHours(); return h < 5 ? "Boa noite" : h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite"; }
-function pctMeta(u){ const m = metaDe(u), w = semanaDe(u); return Math.round((Math.min(1, w.min / m.semanaMin) + Math.min(1, w.kcal / m.semanaKcal)) / 2 * 100); }
-function treinosNaSemana(u){ const ini = inicioSemana(Date.now()).getTime(); return S.pedaladas.filter(p => String(p.uid) === String(u) && p.ts >= ini).length; }
-function treinoIntro(){ return S.treinos.find(t => t.id === INTRO.treinoId) || null; }
+function pctMeta(u){ return Math.round(Math.min(1, cargaSemana(u) / CARGA_SEMANA) * 100); }
 function inicial(n){ return esc((String(n || "?").trim().charAt(0) || "?").toUpperCase()); }
-function descBlocos(t){
-  if(t.blocos.length > 4) return descTreino(t);
-  return t.blocos.map(b => `${String(+(b.seg / 60).toFixed(1)).replace(".", ",")} min ${b.tipo === "livre" ? "livre" : "a " + metaTxt(b)}`).join(" · ");
-}
 function avatarAnel(u){
   const p = pctMeta(u), nome = nomeDe(u), eu = String(u) === String(S.eu);
-  return `<div class="st-av-item"><div class="st-anel"><svg width="72" height="72" viewBox="0 0 72 72" fill="none" role="img" aria-label="${esc(nome)}: ${p}% da meta da semana"><circle cx="36" cy="36" r="32" stroke="var(--st-soft)" stroke-width="5"/>${p > 0 ? `<circle class="st-arco" cx="36" cy="36" r="32" stroke="currentColor" stroke-width="5" stroke-linecap="round" style="--d:${(201.06 * p / 100).toFixed(1)}" transform="rotate(-90 36 36)"/>` : ""}</svg><span>${inicial(nome)}</span></div><b>${eu ? "Você" : esc(nome)} · ${p}%</b></div>`;
+  return `<div class="st-av-item"><div class="st-anel"><svg width="72" height="72" viewBox="0 0 72 72" fill="none" role="img" aria-label="${esc(nome)}: ${p}% da carga da semana"><circle cx="36" cy="36" r="32" stroke="var(--st-soft)" stroke-width="5"/>${p > 0 ? `<circle class="st-arco" cx="36" cy="36" r="32" stroke="currentColor" stroke-width="5" stroke-linecap="round" style="--d:${(201.06 * p / 100).toFixed(1)}" transform="rotate(-90 36 36)"/>` : ""}</svg><span>${inicial(nome)}</span></div><b>${eu ? "Você" : esc(nome)} · ${p}%</b></div>`;
 }
 function figBarra(rot, v, alvo, un, cor, giro){
   const p = Math.min(100, alvo > 0 ? v / alvo * 100 : 0), falta = Math.max(0, alvo - v);
-  return `<div class="fig ${giro}"><div class="fig-top"><span>${rot}</span><span>${falta > 0 ? "faltam " + Math.ceil(falta) + " " + un : "meta batida"}</span></div><div class="fig-num">${Math.floor(v)} <small>de ${alvo} ${un}</small></div><div class="st-slider" style="--p:${p.toFixed(1)}%;--cor:${cor}" aria-hidden="true"><i></i><i></i><i></i></div></div>`;
+  return `<div class="fig ${giro}"><div class="fig-top"><span>${rot}</span><span>${falta > 0 ? "faltam " + fmtPts(falta) + " " + un : "meta batida"}</span></div><div class="fig-num">${fmtPts(v)} <small>de ${alvo} ${un}</small></div><div class="st-slider" style="--p:${p.toFixed(1)}%;--cor:${cor}" aria-hidden="true"><i></i><i></i><i></i></div></div>`;
 }
 function blocoBike(){
   if(bikeLigada()) return `<span class="st-chip so"><span class="st-ponto"></span>Bike conectada</span>`;
@@ -1093,72 +1216,80 @@ function blocoBike(){
   return INTRO.aviso ? `<p class="st-nota">${esc(INTRO.aviso)}</p>` : "";
 }
 function storyBlocos(){
-  const eu = S.eu, m = metaDe(eu), w = semanaDe(eu), nome = nomeDe(eu);
+  const eu = S.eu, nome = nomeDe(eu), c = cargaSemana(eu), n = treinosNaSemana(eu), falta = Math.max(0, CARGA_SEMANA - c);
   if(INTRO.i === 0){
-    const n = treinosNaSemana(eu);
-    const frase = pctMeta(eu) >= 100 ? "Meta da semana batida. Hoje é bônus." : n === 0 ? "Semana nova. Bora abrir a contagem?" : n === 1 ? "Já tem um treino nesta semana." : `Já são ${n} treinos nesta semana.`;
+    const frase = falta <= 0 ? "Carga da semana completa. Hoje é bônus." : n === 0 ? "Semana nova. Bora abrir a contagem?" : n === 1 ? "Já tem um treino nesta semana." : `Já são ${n} treinos nesta semana.`;
     const data = new Intl.DateTimeFormat("pt-BR", {weekday:"long", day:"numeric", month:"long"}).format(new Date());
     return [`<span class="st-pill giro-e">${esc(data)}</span>`, `<h2 class="st-h1">${saudacao()}, ${esc(nome)}!</h2>`, `<p class="st-p">${frase}</p>`,
       `<div class="st-avs">${S.perfis.map(p => avatarAnel(p.id)).join("")}</div>`, `<div class="st-esp"></div>`,
       `<button class="st-toque" data-ir="1">Toque para ver a sua semana ${SETA}</button>`];
   }
   if(INTRO.i === 1){
-    const faltaMin = Math.max(0, m.semanaMin - w.min), faltaK = Math.max(0, m.semanaKcal - w.kcal);
-    let coach;
-    if(faltaMin <= 0 && faltaK <= 0) coach = "Meta da semana batida. O que vier agora é bônus.";
-    else if(faltaMin <= 0) coach = `O tempo já foi. Faltam ${Math.ceil(faltaK)} kcal de energia.`;
-    else {
-      const dias = 7 - ((new Date().getDay() + 6) % 7), n = Math.max(1, Math.min(dias, Math.ceil(faltaMin / m.treinoMin))), cada = Math.ceil(faltaMin / n);
-      coach = n === 1 ? `Um treino de ${cada} minutos fecha a sua meta.` : `${n} treinos de ${cada} minutos fecham a meta até domingo.`;
-    }
-    const outros = S.perfis.filter(p => String(p.id) !== String(eu)).map(p => { const wo = semanaDe(p.id), mo = metaDe(p.id);
-      return `<span class="st-chip"><span class="st-ini">${inicial(p.nome)}</span>${esc(p.nome)} está em ${Math.floor(wo.min)} de ${mo.semanaMin} min</span>`; }).join("");
-    return [`<h2 class="st-h1">Sua semana</h2>`, figBarra("Tempo", w.min, m.semanaMin, "min", "#5B3FD9", "giro-e"), figBarra("Energia", w.kcal, m.semanaKcal, "kcal", "#FF7A59", "giro-d"),
-      `<p class="st-p">${coach}</p>`, outros ? `<div class="st-chips">${outros}</div>` : "", `<div class="st-esp"></div>`,
-      `<button class="st-toque" data-ir="2">Toque para ver o treino de hoje ${SETA}</button>`];
+    const coach = falta <= 0 ? "Carga completa. O que vier agora é bônus." : n >= TREINOS_SEMANA ? `Faltam ${fmtPts(falta)} pontos. Um treino extra resolve.` : `Faltam ${fmtPts(falta)} pontos para os 150 da semana.`;
+    const outros = S.perfis.filter(p => String(p.id) !== String(eu)).map(p => `<span class="st-chip"><span class="st-ini">${inicial(p.nome)}</span>${esc(p.nome)} está em ${fmtPts(cargaSemana(p.id))} de ${CARGA_SEMANA} pontos</span>`).join("");
+    return [`<h2 class="st-h1">Sua semana</h2>`, figBarra("Carga", c, CARGA_SEMANA, "pts", "#5B3FD9", "giro-e"),
+      `<div class="fig giro-d"><div class="fig-top"><span>Treinos</span><span>${n >= TREINOS_SEMANA ? "os 3 feitos" : "faltam " + (TREINOS_SEMANA - n)}</span></div><div class="fig-num">${n} <small>de ${TREINOS_SEMANA} na semana</small></div><div class="st-tres" aria-hidden="true">${[0,1,2].map(k => `<i class="${k < n ? "on" : ""}"></i>`).join("")}</div></div>`,
+      `<p class="st-p">${coach}</p>`, outros ? `<div class="st-chips">${outros}</div>` : "",
+      `<p class="st-mini">1 ponto = 1 minuto moderado. Leve vale meio; pesado vale dois.</p>`, `<div class="st-esp"></div>`,
+      `<button class="st-toque" data-ir="2">Toque para continuar ${SETA}</button>`];
   }
   if(INTRO.i === 2){
-    const t = treinoIntro(), dur = t ? t.blocos.reduce((a,b) => a + b.seg, 0) / 60 : m.treinoMin;
-    return [`<h2 class="st-h1">Treino de hoje</h2>`,
-      `<div class="fig giro-e"><div class="fig-num">${esc(t ? t.nome : "Pedal livre")}</div>${t ? `<div class="perfil-treino" aria-hidden="true">${perfilHTML(t.blocos, -1)}</div>` : ""}<div class="fig-sub">${esc(t ? descBlocos(t) : `No seu ritmo, até encher ${m.treinoMin} min e ${m.treinoKcal} kcal.`)}</div>${S.treinos.length ? `<button class="fig-link" data-acao="trocar">Trocar treino</button>` : ""}</div>`,
-      `<p class="st-p">${w.min >= m.semanaMin ? "A meta de tempo da semana já foi. Este é bônus." : w.min + dur >= m.semanaMin ? `Com ele, você fecha os ${m.semanaMin} minutos da semana.` : `Com ele, você vai a ${Math.floor(w.min + dur)} de ${m.semanaMin} minutos na semana.`}</p>`,
-      blocoBike(), `<div class="st-esp"></div>`,
-      `<button class="st-toque" data-ir="3">Toque para continuar ${SETA}</button>`];
+    const marcado = INTRO.restam || Math.max(1, TREINOS_SEMANA - n);
+    return [`<span class="st-pill giro-e">Faltam ${fmtPts(falta)} pontos</span>`, `<h2 class="st-h1 st-q">Quantos treinos ainda cabem nesta semana?</h2>`,
+      `<p class="st-p">Contando o de hoje. A semana fecha no domingo.</p>`, `<div class="st-esp"></div>`,
+      `<div class="st-opc grande">${[1,2,3].map(k => `<button data-n="${k}" aria-pressed="${k === marcado}">${k}</button>`).join("")}</div>`];
   }
+  const d = durDe(INTRO.dur), i = intDe(INTRO.int), pts = d.min * i.fator;
   if(INTRO.i === 3){
-    const ultima = INTRO.perguntas[INTRO.q].indexOf("música") >= 0;
-    return [`<span class="st-pill giro-e">Antes de subir na bike</span>`,
-      `<h2 class="st-h1 st-q">${esc(INTRO.perguntas[INTRO.q])}</h2>`,
-      INTRO.espera ? `<p class="st-p">${ultima ? "Solta o som. Eu espero." : "Vai lá resolver. Eu espero."}</p>` : "",
+    const restam = INTRO.restam || Math.max(1, TREINOS_SEMANA - n), precisa = falta / restam;
+    const pede = falta <= 0 ? "Semana fechada. Hoje é bônus: escolha no gosto." : `Para fechar em ${restam} ${restam === 1 ? "treino" : "treinos"}, hoje pede ${fmtPts(Math.ceil(precisa))} pontos.`;
+    const efeito = falta <= 0 ? `Vale ${fmtPts(pts)} pontos de bônus.` : c + pts >= CARGA_SEMANA ? "Com ele, você fecha a carga da semana." : pts + .01 < precisa ? `Vale ${fmtPts(pts)} pontos: ficam ${fmtPts(falta - pts)} para os próximos.` : `Com ele, a semana vai a ${fmtPts(c + pts)} de ${CARGA_SEMANA} pontos.`;
+    return [`<h2 class="st-h1">Treino de hoje</h2>`, `<p class="st-p">${pede}</p>`,
+      `<div class="st-opc">${DURS.map(o => `<button data-dur="${o.id}" aria-pressed="${o.id === d.id}">${o.nome}<small>${o.min} min</small></button>`).join("")}</div>`,
+      `<div class="st-opc">${INTS.map(o => `<button data-int="${o.id}" aria-pressed="${o.id === i.id}">${o.nome}<small>${o.fala}</small></button>`).join("")}</div>`,
+      `<div class="fig giro-e"><div class="fig-num">${d.nome} · ${i.nome}</div><div class="fig-sub">${d.min} min · alvo de ${fmtPts(velModerada() * i.vel)} km/h · vale ${fmtPts(pts)} pontos</div></div>`,
+      `<p class="st-p">${efeito}</p>`, blocoBike(), `<div class="st-esp"></div>`,
+      `<button class="st-toque" data-ir="4">Toque para continuar ${SETA}</button>`];
+  }
+  if(INTRO.i === 4){
+    const musica = INTRO.perguntas[0].indexOf("música") >= 0;
+    return [`<span class="st-pill giro-e">Antes de subir na bike</span>`, `<h2 class="st-h1 st-q">${esc(INTRO.perguntas[0])}</h2>`,
+      INTRO.espera ? `<p class="st-p">${musica ? "Solta o som. Eu espero." : "Vai lá resolver. Eu espero."}</p>` : "",
       `<div class="st-esp"></div>`,
       `<div class="st-resp"><button class="st-btn" data-acao="sim">Sim</button><button class="st-btn fantasma" data-acao="nao">Ainda não</button></div>`];
   }
-  const t = treinoIntro(), lig = bikeLigada(), podeBt = !!navigator.bluetooth;
+  const lig = bikeLigada(), podeBt = !!navigator.bluetooth;
   return [`<div class="st-esp"></div>`, `<h2 class="st-h1">Tudo pronto?</h2>`,
-    `<p class="st-p">${esc(t ? t.nome : "Pedal livre")} · meta de ${m.treinoMin} min e ${m.treinoKcal} kcal.</p>`,
+    `<p class="st-p">${d.nome} · ${i.nome}: ${d.min} min, ${fmtPts(pts)} pontos.</p>`,
     blocoBike(), `<div class="st-esp"></div>`,
     lig || !podeBt ? `<button class="st-btn grande" data-acao="pedalar">Pedalar</button>` : `<button class="st-btn grande" data-acao="conectar">Conectar a bike</button>`,
     !lig && podeBt ? `<button class="st-toque" data-acao="pedalar">Pedalar mesmo assim</button>` : ""];
 }
 function renderStory(anim){
-  const el = $("intro"); el.dataset.tema = TEMAS[INTRO.i];
+  const el = $("intro"), pedal = INTRO.modo === "pedal", fim = INTRO.modo === "fim";
+  el.dataset.tema = pedal ? PD.i.tema : fim ? "noite" : TEMAS[INTRO.i];
+  $("st-seg").hidden = !!INTRO.modo; $("st-x").hidden = pedal;
   $("st-seg").innerHTML = TEMAS.map((_, k) => `<i class="${k <= INTRO.i ? "on" : ""}"></i>`).join("");
   const corpo = $("st-body"); corpo.classList.toggle("sem-anim", !anim);
-  corpo.innerHTML = storyBlocos().filter(Boolean).map((h, k) => `<div class="st-item${h.indexOf('class="st-esp"') >= 0 ? " st-cresce" : ""}" style="--i:${k}">${h}</div>`).join("");
+  corpo.innerHTML = (pedal ? pedalBlocos() : fim ? fimBlocos() : storyBlocos()).filter(Boolean).map((h, k) => `<div class="st-item${h.indexOf('class="st-esp"') >= 0 ? " st-cresce" : ""}" style="--i:${k}">${h}</div>`).join("");
   if(anim) el.scrollTop = 0;
 }
-function abrirIntro(){
+function abrirIntro(i0){
   if(R.estado !== "parado") return;
-  const ult = LS.get("pd.ultimoTreino", null);
-  INTRO.treinoId = S.treinos.some(t => t.id === ult) ? ult : (ult === "" || !S.treinos.length ? "" : S.treinos[0].id);
+  const ult = LS.get("pd.ultimoTreino", null) || {}, n = treinosNaSemana(S.eu), falta = Math.max(0, CARGA_SEMANA - cargaSemana(S.eu));
+  const s = falta > 0 ? sugestao(falta / Math.max(1, TREINOS_SEMANA - n)) : {d:durDe(ult.dur), i:intDe(ult.int)};
   const anterior = LS.get("pd.ultimaPergunta", ""), opcoes = ["As crianças estão seguras?"].concat(PERGUNTAS_PAIS, ["A música está ligada?"]).filter(q => q !== anterior);
   INTRO.perguntas = [opcoes[Math.floor(Math.random() * opcoes.length)]]; LS.set("pd.ultimaPergunta", INTRO.perguntas[0]);
-  Object.assign(INTRO, {aberta:true, vista:true, i:0, q:0, espera:false, aviso:""});
+  Object.assign(INTRO, {aberta:true, vista:true, modo:"", i: typeof i0 === "number" ? i0 : 0, q:0, espera:false, aviso:"", restam:0, dur:s.d.id, int:s.i.id});
   $("intro").hidden = false; document.body.style.overflow = "hidden";
   renderStory(true);
 }
-function fecharIntro(){ INTRO.aberta = false; $("intro").hidden = true; document.body.style.overflow = ""; }
-function irStory(i){ INTRO.i = Math.max(0, Math.min(TEMAS.length - 1, i)); INTRO.espera = false; renderStory(true); }
+function fecharIntro(){ INTRO.aberta = false; INTRO.modo = ""; $("intro").hidden = true; document.body.style.overflow = ""; }
+function irStory(i){
+  i = Math.max(0, Math.min(TEMAS.length - 1, i));
+  if(i === 2 && cargaSemana(S.eu) >= CARGA_SEMANA) i = INTRO.i < 2 ? 3 : 1;
+  INTRO.i = i; INTRO.espera = false; renderStory(true);
+}
 
 /* ---------- eventos ---------- */
 function mostrar(v){
@@ -1173,7 +1304,7 @@ $("bt-con").addEventListener("click", () => { if(BT.demo) pararDemo(); else if(B
 $("bt-todos").addEventListener("click", () => conectar(true));
 $("bt-demo").addEventListener("click", iniciarDemo);
 $("sel-treino").addEventListener("change", renderEscolha);
-$("a-iniciar").addEventListener("click", iniciar);
+$("a-iniciar").addEventListener("click", () => abrirIntro(3));
 $("a-pausar").addEventListener("click", pausar);
 $("a-finalizar").addEventListener("click", finalizar);
 
@@ -1258,6 +1389,9 @@ $("aj-salvar").addEventListener("click", async () => {
   if(AJ.metas && !(nova.treinoMin > 0 && nova.treinoKcal > 0 && nova.semanaMin > 0 && nova.semanaKcal > 0)){ msg.hidden = false; msg.textContent = "Preencha as quatro metas com números maiores que zero."; return; }
   if(AJ.nome && !nome){ msg.hidden = false; msg.textContent = "Escreva seu nome."; return; }
   const mudouNome = AJ.nome, mudouMetas = AJ.metas;
+  const pv = parseFloat(String($("aj-peso").value).replace(",", ".")), vv = parseFloat(String($("aj-vel").value).replace(",", "."));
+  if(pv >= 30 && pv <= 250) LS.set("pd.peso", pv);
+  if(vv >= 5 && vv <= 80) LS.set("pd.vmod", vv);
   msg.hidden = true; LS.set("pd.api", v);
   await sincronizar();
   if(v && $("sync").classList.contains("alerta")){ msg.hidden = false; msg.textContent = "Não consegui ler a planilha. Confira se a implantação está como \"Qualquer pessoa\" e se o endereço termina em /exec."; return; }
@@ -1277,23 +1411,33 @@ $("aj-copiar").addEventListener("click", async () => {
   catch(e){ el.focus(); el.select(); b.textContent = "Selecionado"; }
   setTimeout(() => { b.textContent = "Copiar"; }, 2500);
 });
-$("st-x").addEventListener("click", fecharIntro);
+$("st-x").addEventListener("click", () => { if(INTRO.modo !== "pedal") fecharIntro(); });
 $("intro").addEventListener("click", async ev => {
   const b = ev.target.closest("button, a");
   if(b){
     if(b.id === "st-x") return;
     if(b.dataset.ir) return irStory(+b.dataset.ir);
+    if(b.dataset.n){ const k = +b.dataset.n, s = sugestao(Math.max(0, CARGA_SEMANA - cargaSemana(S.eu)) / k); Object.assign(INTRO, {restam:k, dur:s.d.id, int:s.i.id}); return irStory(3); }
+    if(b.dataset.dur){ INTRO.dur = b.dataset.dur; return renderStory(false); }
+    if(b.dataset.int){ INTRO.int = b.dataset.int; return renderStory(false); }
+    if(b.dataset.vista) return pdVista(b.dataset.vista);
     const a = b.dataset.acao;
-    if(a === "trocar"){ const ids = S.treinos.map(t => t.id).concat([""]); INTRO.treinoId = ids[(ids.indexOf(INTRO.treinoId) + 1) % ids.length]; renderStory(false); }
-    if(a === "conectar"){ INTRO.aviso = ""; b.disabled = true; b.textContent = "Procurando a bike…"; await conectar(false); const m = $("bt-msg"); INTRO.aviso = m.hidden ? "" : m.textContent; if(INTRO.aberta) renderStory(false); }
-    if(a === "sim"){ if(INTRO.q < INTRO.perguntas.length - 1){ INTRO.q += 1; INTRO.espera = false; renderStory(true); } else irStory(4); }
+    if(a === "conectar"){ INTRO.aviso = ""; b.disabled = true; b.textContent = "Procurando a bike…"; await conectar(false); const m = $("bt-msg"); INTRO.aviso = m.hidden ? "" : m.textContent; if(INTRO.aberta && !INTRO.modo) renderStory(false); }
+    if(a === "sim") irStory(5);
     if(a === "nao"){ INTRO.espera = true; renderStory(false); }
-    if(a === "pedalar"){ const id = INTRO.treinoId; LS.set("pd.ultimoTreino", id); fecharIntro(); mostrar("pedalar"); $("sel-treino").value = id; renderEscolha(); iniciar(); }
+    if(a === "pedalar") iniciarPedal();
+    if(a === "pausar"){ if(R.estado === "rodando") pausar(); else iniciar(); pdAtualiza(); }
+    if(a === "finalizar"){
+      if(!PD.confirma){ b.textContent = "Toque de novo"; PD.confirma = setTimeout(() => { PD.confirma = null; const f = $("pd-fim"); if(f) f.textContent = "Finalizar"; }, 3000); }
+      else { clearTimeout(PD.confirma); PD.confirma = null; await concluirPedal(); }
+    }
+    if(a === "fechar-fim"){ fecharIntro(); mostrar("evolucao"); }
     return;
   }
+  if(INTRO.modo) return;
   const r = ev.clientX / window.innerWidth;
-  if(r < .3){ if(INTRO.i === 3 && INTRO.q > 0){ INTRO.q -= 1; INTRO.espera = false; renderStory(true); } else if(INTRO.i > 0) irStory(INTRO.i - 1); }
-  else if(INTRO.i < 3) irStory(INTRO.i + 1);
+  if(r < .3){ if(INTRO.i > 0) irStory(INTRO.i - 1); }
+  else if(INTRO.i <= 1 || INTRO.i === 3) irStory(INTRO.i + 1);
 });
 renderTudo();
 if(!S.eu || !apiUrl()) abrirAjustes(); else abrirIntro();
